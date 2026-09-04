@@ -116,6 +116,10 @@ app.post("/api/transferir", (req, res) => {
         usuarios: usuarios
     });
 });
+
+app.get("/api/transferencias", (req, res) => {
+    res.json(transferencias);
+});
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Banco Grafonia iniciado en el puerto ${PORT}`);
 });
