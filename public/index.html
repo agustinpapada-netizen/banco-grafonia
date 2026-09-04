@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco Grafonia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+```
+<h1>🏦 Banco Grafonia</h1>
+<p>Tu dinero. Tu banco. Tu Grafonia.</p>
+
+<!-- LOGIN -->
+<div id="login">
+    <h2>Bienvenido</h2>
+
+    <input
+        id="nameInput"
+        type="text"
+        placeholder="Escribí tu nombre"
+    >
+
+    <button onclick="entrar()">Entrar</button>
+</div>
+
+
+<!-- BANCO NORMAL -->
+<div id="bank" style="display: none;">
+
+    <h2>Hola, <span id="userName"></span> 👋</h2>
+
+    <div class="balance">
+        <p>Tu saldo</p>
+        <h2>₲ <span id="balance">0</span></h2>
+    </div>
+
+    <h2>🏆 Personas con más dinero</h2>
+
+    <div id="ranking"></div>
+
+    <h2>💸 Transferir dinero</h2>
+
+    <input
+        id="receiver"
+        type="text"
+        placeholder="Nombre del destinatario"
+    >
+
+    <input
+        id="amount"
+        type="number"
+        placeholder="Cantidad"
+    >
+
+    <button onclick="transferir()">Transferir</button>
+
+</div>
+
+
+<!-- PANEL DE ADMINISTRACIÓN -->
+<div id="admin" style="display: none;">
+
+    <h2>👑 Panel de Administración</h2>
+
+    <div class="balance">
+        <p>Dinero total en circulación</p>
+        <h2>₲ <span id="adminTotal">0</span></h2>
+    </div>
+
+    <h2>👥 Usuarios</h2>
+
+    <div id="adminRanking"></div>
+
+
+    <h2>💰 Administrar dinero</h2>
+
+    <input
+        id="adminUser"
+        type="text"
+        placeholder="Nombre del usuario"
+    >
+
+    <input
+        id="adminAmount"
+        type="number"
+        placeholder="Cantidad"
+    >
+
+    <button onclick="agregarDinero()">
+        ➕ Agregar dinero
+    </button>
+
+    <button onclick="quitarDinero()">
+        ➖ Quitar dinero
+    </button>
+
+
+    <h2>🗑️ Eliminar usuario</h2>
+
+    <input
+        id="deleteUser"
+        type="text"
+        placeholder="Nombre del usuario"
+    >
+
+    <button onclick="eliminarUsuario()">
+        🗑️ Eliminar
+    </button>
+
+
+    <h2>🚪 Sesión</h2>
+
+    <button onclick="cerrarSesion()">
+        Cerrar sesión
+    </button>
+
+</div>
+```
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
+<script src="app.js"></script>
