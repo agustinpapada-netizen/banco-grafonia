@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 let usuarios = {};
-
+let transferencias = [];
 app.get("/api/usuarios", (req, res) => {
     res.json(usuarios);
 });
@@ -104,6 +104,13 @@ app.post("/api/transferir", (req, res) => {
     usuarios[remitente] -= cantidad;
     usuarios[destinatario] += cantidad;
 
+    transferencias.push({
+    remitente: remitente,
+    destinatario: destinatario,
+    cantidad: cantidad,
+    fecha: new Date().toLocaleString("es-AR")
+});
+    
     res.json({
         mensaje: "Transferencia realizada",
         usuarios: usuarios
