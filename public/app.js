@@ -1,10 +1,11 @@
-let usuarios = {};
+var usuarios = {};
 
-function guardarUsuarios() {
-    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+async function cargarUsuarios() {
+    const respuesta = await fetch("/api/usuarios");
+    usuarios = await respuesta.json();
 }
 
-function entrar() {
+async function entrar() {
     const nombre = document.getElementById("nameInput").value.trim();
 
     if (!nombre) {
@@ -18,13 +19,30 @@ function entrar() {
         return;
     }
 
-    if (!(nombre in usuarios)) {
-        usuarios[nombre] = 1000;
-    }
+    try {
+        const respuesta = await fetch("/api/usuarios", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ nombre: nombre })
+        });
 
-    guardarUsuarios();
-    localStorage.setItem("usuarioActual", nombre);
-    mostrarBanco();
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            alert(datos.error);
+            return;
+        }
+
+        usuarios = datos.usuarios;
+        localStorage.setItem("usuarioActual", nombre);
+        mostrarBanco();
+
+    } catch (error) {
+        alert("No se pudo conectar con Banco Grafonia 😭");
+        console.error(error);
+    }
 }
 
 function mostrarAdmin() {
@@ -38,7 +56,6 @@ function mostrarAdmin() {
 
 function actualizarRankingAdmin() {
     const ranking = document.getElementById("adminRanking");
-
     ranking.innerHTML = "";
 
     const lista = Object.entries(usuarios)
@@ -51,10 +68,8 @@ function actualizarRankingAdmin() {
 
     lista.forEach(function(usuario, index) {
         ranking.innerHTML +=
-            "<div>" +
-            "<strong>#" + (index + 1) + "</strong> " +
-            usuario[0] + " — ₲" + usuario[1] +
-            "</div>";
+            "<div><strong>#" + (index + 1) + "</strong> " +
+            usuario[0] + " — ₲" + usuario[1] + "</div>";
     });
 }
 
@@ -88,9 +103,6 @@ function agregarDinero() {
     }
 
     usuarios[nombre] += cantidad;
-
-    guardarUsuarios();
-    limpiarAdminInputs();
     actualizarRankingAdmin();
     actualizarTotalAdmin();
 
@@ -122,9 +134,6 @@ function quitarDinero() {
     }
 
     usuarios[nombre] -= cantidad;
-
-    guardarUsuarios();
-    limpiarAdminInputs();
     actualizarRankingAdmin();
     actualizarTotalAdmin();
 
@@ -144,17 +153,11 @@ function eliminarUsuario() {
         return;
     }
 
-    const confirmar = confirm(
-        "¿Seguro que querés eliminar a " + nombre + "?"
-    );
-
-    if (!confirmar) {
+    if (!confirm("¿Seguro que querés eliminar a " + nombre + "?")) {
         return;
     }
 
     delete usuarios[nombre];
-
-    guardarUsuarios();
 
     document.getElementById("deleteUser").value = "";
 
@@ -194,7 +197,6 @@ function mostrarBanco() {
 
 function actualizarSaldo() {
     const nombre = localStorage.getItem("usuarioActual");
-
     document.getElementById("balance").textContent = usuarios[nombre];
 }
 
@@ -208,14 +210,12 @@ function actualizarRanking() {
 
     lista.forEach(function(usuario, index) {
         ranking.innerHTML +=
-            "<p>" +
-            "<strong>#" + (index + 1) + "</strong> " +
-            usuario[0] + " — ₲" + usuario[1] +
-            "</p>";
+            "<p><strong>#" + (index + 1) + "</strong> " +
+            usuario[0] + " — ₲" + usuario[1] + "</p>";
     });
 }
 
-function transferir() {
+async function transferir() {
     const remitente = localStorage.getItem("usuarioActual");
     const destinatario = document.getElementById("receiver").value.trim();
     const cantidad = Number(document.getElementById("amount").value);
@@ -225,56 +225,48 @@ function transferir() {
         return;
     }
 
-    if (!(destinatario in usuarios)) {
-        alert("Ese usuario no existe.");
-        return;
+    try {
+        const respuesta = await fetch("/api/transferir", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                remitente,
+                destinatario,
+                cantidad
+            })
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            alert(datos.error);
+            return;
+        }
+
+        usuarios = datos.usuarios;
+
+        document.getElementById("receiver").value = "";
+        document.getElementById("amount").value = "";
+
+        actualizarSaldo();
+        actualizarRanking();
+
+        alert("Transferiste ₲" + cantidad + " a " + destinatario + " 💸");
+
+    } catch (error) {
+        alert("No se pudo conectar con Banco Grafonia 😭");
+        console.error(error);
     }
-
-    if (destinatario === remitente) {
-        alert("No podés transferirte dinero a vos mismo.");
-        return;
-    }
-
-    if (cantidad <= 0) {
-        alert("La cantidad debe ser mayor que 0.");
-        return;
-    }
-
-    if (usuarios[remitente] < cantidad) {
-        alert("No tenés suficiente dinero 💀");
-        return;
-    }
-
-    usuarios[remitente] -= cantidad;
-    usuarios[destinatario] += cantidad;
-
-    guardarUsuarios();
-
-    document.getElementById("receiver").value = "";
-    document.getElementById("amount").value = "";
-
-    actualizarSaldo();
-    actualizarRanking();
-
-    alert(
-        "Transferiste ₲" +
-        cantidad +
-        " a " +
-        destinatario +
-        " 💸"
-    );
 }
 
-const datosGuardados = localStorage.getItem("usuarios");
+cargarUsuarios().then(() => {
+    const usuarioActual = localStorage.getItem("usuarioActual");
 
-if (datosGuardados) {
-    usuarios = JSON.parse(datosGuardados);
-}
-
-const usuarioActual = localStorage.getItem("usuarioActual");
-
-if (usuarioActual === "AdminGrafonia") {
-    mostrarAdmin();
-} else if (usuarioActual && usuarioActual in usuarios) {
-    mostrarBanco();
-}
+    if (usuarioActual === "AdminGrafonia") {
+        mostrarAdmin();
+    } else if (usuarioActual && usuarioActual in usuarios) {
+        mostrarBanco();
+    }
+});
