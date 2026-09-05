@@ -44,7 +44,27 @@ async function entrar() {
         console.error(error);
     }
 }
+async function actualizarHistorialAdmin() {
+    const respuesta = await fetch("/api/transferencias");
+    const transferencias = await respuesta.json();
 
+    const historial = document.getElementById("adminHistorial");
+
+    historial.innerHTML = "";
+
+    if (transferencias.length === 0) {
+        historial.innerHTML = "<p>No hay transferencias todavía.</p>";
+        return;
+    }
+
+    transferencias.slice().reverse().forEach(function(t) {
+        historial.innerHTML +=
+            "<p>💸 <strong>" + t.remitente +
+            "</strong> → <strong>" + t.destinatario +
+            "</strong>: ₲" + t.cantidad +
+            " — " + t.fecha + "</p>";
+    });
+}
 function mostrarAdmin() {
     document.getElementById("login").style.display = "none";
     document.getElementById("bank").style.display = "none";
@@ -52,7 +72,7 @@ function mostrarAdmin() {
 
     actualizarRankingAdmin();
     actualizarTotalAdmin();
-}
+}   actualizarHistorialAdmin();
 
 function actualizarRankingAdmin() {
     const ranking = document.getElementById("adminRanking");
@@ -168,7 +188,7 @@ function quitarDinero() {
     usuarios[nombre] -= cantidad;
     actualizarRankingAdmin();
     actualizarTotalAdmin();
-
+    actualizarHistorialAdmin();
     alert("Se quitaron ₲" + cantidad + " a " + nombre + " 💸");
 }
 
