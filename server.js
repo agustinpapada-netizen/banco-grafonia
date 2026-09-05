@@ -110,6 +110,89 @@ app.post("/api/usuarios", async (req, res) => {
         });
     }
 });
+// =========================
+// RUTAS DE TRANSFERENCIAS
+// =========================
+
+app.get("/api/transferencias", async (req, res) => {
+    try {
+        const resultado = await pool.query(
+            "SELECT remitente, destinatario, cantidad, TO_CHAR(fecha, 'DD/MM/YYYY HH24:MI') as fecha FROM transferencias ORDER BY id ASC"
+        );
+        res.json(resultado.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error al cargar el historial" });
+    }
+});
+
+app.post("/api/transferir", async (req, res) => {
+    const { remitente, destinatario, cantidad } = req.body;
+
+    if (!remitente || !destinatario || !cantidad || cantidad <= 0) {
+        return res.status(400).json({ error: "Datos de transferencia inválidos" });
+    }
+
+    try {
+        await pool.query("BEGIN");
+
+        // Verificar saldo del remitente
+        const resRemitente = await pool.query(
+            "SELECT dinero FROM usuarios WHERE nombre = $1",
+            [remitente]
+        );
+
+        if (resRemitente.rows.length === 0 || resRemitente.rows[0].dinero < cantidad) {
+            await pool.query("ROLLBACK");
+            return res.status(400).json({ error: "No tenés suficiente dinero" });
+        }
+
+        // Verificar si existe el destinatario
+        const resDestinatario = await pool.query(
+            "SELECT dinero FROM usuarios WHERE nombre = $1",
+            [destinatario]
+        );
+
+        if (resDestinatario.rows.length === 0) {
+            await pool.query("ROLLBACK");
+            return res.status(400).json({ error: "El destinatario no existe" });
+        }
+
+        // Descontar al remitente
+        await pool.query(
+            "UPDATE usuarios SET dinero = dinero - $1 WHERE nombre = $2",
+            [cantidad, remitente]
+        );
+
+        // Sumar al destinatario
+        await pool.query(
+            "UPDATE usuarios SET dinero = dinero + $1 WHERE nombre = $2",
+            [cantidad, destinatario]
+        );
+
+        // Registrar la transferencia
+        await pool.query(
+            "INSERT INTO transferencias (remitente, destinatario, cantidad) VALUES ($1, $2, $3)",
+            [remitente, destinatario, cantidad]
+        );
+
+        await pool.query("COMMIT");
+
+        // Devolver usuarios actualizados
+        const resultadoUsuarios = await pool.query("SELECT nombre, dinero FROM usuarios");
+        const usuarios = {};
+        resultadoUsuarios.rows.forEach(u => {
+            usuarios[u.nombre] = u.dinero;
+        });
+
+        res.json({ mensaje: "Transferencia exitosa", usuarios });
+
+    } catch (error) {
+        await pool.query("ROLLBACK");
+        console.error(error);
+        res.status(500).json({ error: "Error al procesar la transferencia" });
+    }
+});
 prepararBaseDeDatos().then(() => {
     app.listen(PORT, "0.0.0.0", () => {
         console.log(`Banco Grafonia iniciado en el puerto ${PORT}`);
