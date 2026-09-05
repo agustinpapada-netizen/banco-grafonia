@@ -90,3 +90,8 @@ app.post("/api/usuarios", async (req, res) => {
         });
     }
 });
+prepararBaseDeDatos().then(() => {
+    app.listen(PORT, "0.0.0.0", () => {
+        console.log(`Banco Grafonia iniciado en el puerto ${PORT}`);
+    });
+});
