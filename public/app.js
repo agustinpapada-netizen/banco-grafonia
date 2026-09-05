@@ -44,26 +44,24 @@ async function entrar() {
         console.error(error);
     }
 }
-async function actualizarHistorialAdmin() {
+async function actualizarHistorial() {
     const respuesta = await fetch("/api/transferencias");
     const transferencias = await respuesta.json();
 
-    const historial = document.getElementById("adminHistorial");
+    const usuarioActual = localStorage.getItem("usuarioActual");
+    const historial = document.getElementById("historial");
 
     historial.innerHTML = "";
 
-    if (transferencias.length === 0) {
+    const misTransferencias = transferencias.filter(function(t) {
+        return t.remitente === usuarioActual ||
+               t.destinatario === usuarioActual;
+    }).reverse();
+
+    if (misTransferencias.length === 0) {
         historial.innerHTML = "<p>No hay transferencias todavía.</p>";
         return;
     }
-
-    transferencias.slice().reverse().forEach(function(t) {
-        historial.innerHTML +=
-            "<p>💸 <strong>" + t.remitente +
-            "</strong> → <strong>" + t.destinatario +
-            "</strong>: ₲" + t.cantidad +
-            " — " + t.fecha + "</p>";
-    });
 }
 function mostrarAdmin() {
     document.getElementById("login").style.display = "none";
