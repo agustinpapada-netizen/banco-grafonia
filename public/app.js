@@ -103,9 +103,43 @@ function actualizarTotalAdmin() {
     document.getElementById("adminTotal").textContent = total;
 }
 async function actualizarHistorial() {
+    const historial = document.getElementById("historial");
+
+    if (!historial) {
+        return;
+    }
+
     const respuesta = await fetch("/api/transferencias");
     const transferencias = await respuesta.json();
 
+    const usuarioActual = localStorage.getItem("usuarioActual");
+
+    historial.innerHTML = "";
+
+    const misTransferencias = transferencias.filter(function(t) {
+        return t.remitente === usuarioActual ||
+               t.destinatario === usuarioActual;
+    }).reverse();
+
+    if (misTransferencias.length === 0) {
+        historial.innerHTML = "<p>No hay transferencias todavía.</p>";
+        return;
+    }
+
+    misTransferencias.forEach(function(t) {
+        if (t.remitente === usuarioActual) {
+            historial.innerHTML +=
+                "<p>💸 Enviaste ₲" + t.cantidad +
+                " a <strong>" + t.destinatario +
+                "</strong> — " + t.fecha + "</p>";
+        } else {
+            historial.innerHTML +=
+                "<p>📥 Recibiste ₲" + t.cantidad +
+                " de <strong>" + t.remitente +
+                "</strong> — " + t.fecha + "</p>";
+        }
+    });
+}
     const usuarioActual = localStorage.getItem("usuarioActual");
     const historial = document.getElementById("historial");
 
