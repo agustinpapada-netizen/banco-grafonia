@@ -1,9 +1,25 @@
-var usuarios = {};
+let usuarios = {};
 
 async function cargarUsuarios() {
-    const respuesta = await fetch("/api/usuarios");
-    usuarios = await respuesta.json();
+    try {
+        const respuesta = await fetch("/api/usuarios");
+
+        if (!respuesta.ok) {
+            throw new Error("No se pudieron cargar los usuarios");
+        }
+
+        usuarios = await respuesta.json();
+
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo conectar con Banco Grafonia 😭");
+    }
 }
+
+
+// =========================
+// ENTRAR
+// =========================
 
 async function entrar() {
     const nombre = document.getElementById("nameInput").value.trim();
@@ -25,7 +41,9 @@ async function entrar() {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ nombre: nombre })
+            body: JSON.stringify({
+                nombre: nombre
+            })
         });
 
         const datos = await respuesta.json();
@@ -36,44 +54,57 @@ async function entrar() {
         }
 
         usuarios = datos.usuarios;
+
         localStorage.setItem("usuarioActual", nombre);
+
         mostrarBanco();
 
     } catch (error) {
-        alert("No se pudo conectar con Banco Grafonia 😭");
         console.error(error);
+        alert("No se pudo conectar con Banco Grafonia 😭");
     }
 }
-async function actualizarHistorial() {
-    const respuesta = await fetch("/api/transferencias");
-    const transferencias = await respuesta.json();
 
-    const usuarioActual = localStorage.getItem("usuarioActual");
-    const historial = document.getElementById("historial");
 
-    historial.innerHTML = "";
+// =========================
+// MOSTRAR BANCO
+// =========================
 
-    const misTransferencias = transferencias.filter(function(t) {
-        return t.remitente === usuarioActual ||
-               t.destinatario === usuarioActual;
-    }).reverse();
+function mostrarBanco() {
+    const nombre = localStorage.getItem("usuarioActual");
 
-    if (misTransferencias.length === 0) {
-        historial.innerHTML = "<p>No hay transferencias todavía.</p>";
-        return;
-    }
-}
-function mostrarAdmin() {
     document.getElementById("login").style.display = "none";
-    document.getElementById("bank").style.display = "none";
-    document.getElementById("admin").style.display = "block";
+    document.getElementById("admin").style.display = "none";
+    document.getElementById("bank").style.display = "block";
 
-    actualizarRankingAdmin();
-    actualizarTotalAdmin();
-}   actualizarHistorialAdmin();
+    document.getElementById("userName").textContent = nombre;
 
-function actualizarRankingAdmin() {
-    const ranking = document.getElementById("adminRanking");
+    actualizarSaldo();
+    actualizarRanking();
+    actualizarHistorial();
+}
+
+
+// =========================
+// SALDO
+// =========================
+
+function actualizarSaldo() {
+    const nombre = localStorage.getItem("usuarioActual");
+
+    if (usuarios[nombre] !== undefined) {
+        document.getElementById("balance").textContent = usuarios[nombre];
+    }
+}
+
+
+// =========================
+// RANKING NORMAL
+// =========================
+
+function actualizarRanking() {
+    const ranking = document.getElementById("ranking");
+
     ranking.innerHTML = "";
 
     const lista = Object.entries(usuarios)
@@ -86,10 +117,196 @@ function actualizarRankingAdmin() {
 
     lista.forEach(function(usuario, index) {
         ranking.innerHTML +=
-            "<div><strong>#" + (index + 1) + "</strong> " +
-            usuario[0] + " — ₲" + usuario[1] + "</div>";
+            "<p><strong>#" + (index + 1) + "</strong> " +
+            usuario[0] + " — ₲" + usuario[1] +
+            "</p>";
     });
 }
+
+
+// =========================
+// HISTORIAL NORMAL
+// =========================
+
+async function actualizarHistorial() {
+    const historial = document.getElementById("historial");
+
+    if (!historial) {
+        return;
+    }
+
+    try {
+        const respuesta = await fetch("/api/transferencias");
+        const transferencias = await respuesta.json();
+
+        const usuarioActual = localStorage.getItem("usuarioActual");
+
+        historial.innerHTML = "";
+
+        const misTransferencias = transferencias
+            .filter(function(t) {
+                return t.remitente === usuarioActual ||
+                       t.destinatario === usuarioActual;
+            })
+            .reverse();
+
+        if (misTransferencias.length === 0) {
+            historial.innerHTML =
+                "<p>No hay transferencias todavía.</p>";
+            return;
+        }
+
+        misTransferencias.forEach(function(t) {
+
+            if (t.remitente === usuarioActual) {
+
+                historial.innerHTML +=
+                    "<p>💸 Enviaste ₲" + t.cantidad +
+                    " a <strong>" + t.destinatario +
+                    "</strong> — " + t.fecha + "</p>";
+
+            } else {
+
+                historial.innerHTML +=
+                    "<p>📥 Recibiste ₲" + t.cantidad +
+                    " de <strong>" + t.remitente +
+                    "</strong> — " + t.fecha + "</p>";
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        historial.innerHTML =
+            "<p>No se pudo cargar el historial.</p>";
+    }
+}
+
+
+// =========================
+// TRANSFERIR
+// =========================
+
+async function transferir() {
+    const remitente = localStorage.getItem("usuarioActual");
+
+    const destinatario =
+        document.getElementById("receiver").value.trim();
+
+    const cantidad =
+        Number(document.getElementById("amount").value);
+
+    if (!destinatario || !cantidad) {
+        alert("Completá todos los campos 😭");
+        return;
+    }
+
+    if (cantidad <= 0) {
+        alert("La cantidad debe ser mayor que 0.");
+        return;
+    }
+
+    try {
+
+        const respuesta = await fetch("/api/transferir", {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                remitente: remitente,
+                destinatario: destinatario,
+                cantidad: cantidad
+            })
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            alert(datos.error);
+            return;
+        }
+
+        usuarios = datos.usuarios;
+
+        document.getElementById("receiver").value = "";
+        document.getElementById("amount").value = "";
+
+        actualizarSaldo();
+        actualizarRanking();
+        actualizarHistorial();
+
+        alert(
+            "Transferiste ₲" +
+            cantidad +
+            " a " +
+            destinatario +
+            " 💸"
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "No se pudo conectar con Banco Grafonia 😭"
+        );
+    }
+}
+
+
+// =========================
+// ADMIN
+// =========================
+
+function mostrarAdmin() {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("bank").style.display = "none";
+    document.getElementById("admin").style.display = "block";
+
+    actualizarRankingAdmin();
+    actualizarTotalAdmin();
+    actualizarHistorialAdmin();
+}
+
+
+// =========================
+// RANKING ADMIN
+// =========================
+
+function actualizarRankingAdmin() {
+    const ranking =
+        document.getElementById("adminRanking");
+
+    ranking.innerHTML = "";
+
+    const lista = Object.entries(usuarios)
+        .sort((a, b) => b[1] - a[1]);
+
+    if (lista.length === 0) {
+        ranking.innerHTML =
+            "<p>No hay usuarios todavía.</p>";
+        return;
+    }
+
+    lista.forEach(function(usuario, index) {
+
+        ranking.innerHTML +=
+            "<div><strong>#" +
+            (index + 1) +
+            "</strong> " +
+            usuario[0] +
+            " — ₲" +
+            usuario[1] +
+            "</div>";
+    });
+}
+
+
+// =========================
+// TOTAL ADMIN
+// =========================
 
 function actualizarTotalAdmin() {
     let total = 0;
@@ -98,78 +315,80 @@ function actualizarTotalAdmin() {
         total += dinero;
     });
 
-    document.getElementById("adminTotal").textContent = total;
+    document.getElementById("adminTotal").textContent =
+        total;
 }
-async function actualizarHistorial() {
-    const historial = document.getElementById("historial");
+
+
+// =========================
+// HISTORIAL ADMIN
+// =========================
+
+async function actualizarHistorialAdmin() {
+
+    const historial =
+        document.getElementById("adminHistorial");
 
     if (!historial) {
         return;
     }
 
-    const respuesta = await fetch("/api/transferencias");
-    const transferencias = await respuesta.json();
+    try {
 
-    const usuarioActual = localStorage.getItem("usuarioActual");
+        const respuesta =
+            await fetch("/api/transferencias");
 
-    historial.innerHTML = "";
+        const transferencias =
+            await respuesta.json();
 
-    const misTransferencias = transferencias.filter(function(t) {
-        return t.remitente === usuarioActual ||
-               t.destinatario === usuarioActual;
-    }).reverse();
+        historial.innerHTML = "";
 
-    if (misTransferencias.length === 0) {
-        historial.innerHTML = "<p>No hay transferencias todavía.</p>";
-        return;
-    }
+        if (transferencias.length === 0) {
 
-    misTransferencias.forEach(function(t) {
-        if (t.remitente === usuarioActual) {
-            historial.innerHTML +=
-                "<p>💸 Enviaste ₲" + t.cantidad +
-                " a <strong>" + t.destinatario +
-                "</strong> — " + t.fecha + "</p>";
-        } else {
-            historial.innerHTML +=
-                "<p>📥 Recibiste ₲" + t.cantidad +
-                " de <strong>" + t.remitente +
-                "</strong> — " + t.fecha + "</p>";
+            historial.innerHTML =
+                "<p>No hay transferencias todavía.</p>";
+
+            return;
         }
-    });
-}
-    const usuarioActual = localStorage.getItem("usuarioActual");
-    const historial = document.getElementById("historial");
 
-    historial.innerHTML = "";
+        transferencias
+            .slice()
+            .reverse()
+            .forEach(function(t) {
 
-    const misTransferencias = transferencias.filter(function(t) {
-        return t.remitente === usuarioActual ||
-               t.destinatario === usuarioActual;
-    }).reverse();
+                historial.innerHTML +=
+                    "<p>💸 <strong>" +
+                    t.remitente +
+                    "</strong> → <strong>" +
+                    t.destinatario +
+                    "</strong>: ₲" +
+                    t.cantidad +
+                    " — " +
+                    t.fecha +
+                    "</p>";
+            });
 
-    if (misTransferencias.length === 0) {
-        historial.innerHTML = "<p>No hay transferencias todavía.</p>";
-        return;
+    } catch (error) {
+
+        console.error(error);
+
+        historial.innerHTML =
+            "<p>No se pudo cargar el historial.</p>";
     }
-
-    misTransferencias.forEach(function(t) {
-        if (t.remitente === usuarioActual) {
-            historial.innerHTML +=
-                "<p>💸 Enviaste ₲" + t.cantidad +
-                " a <strong>" + t.destinatario +
-                "</strong> — " + t.fecha + "</p>";
-        } else {
-            historial.innerHTML +=
-                "<p>📥 Recibiste ₲" + t.cantidad +
-                " de <strong>" + t.remitente +
-                "</strong> — " + t.fecha + "</p>";
-        }
-    });
 }
+
+
+// =========================
+// AGREGAR DINERO
+// =========================
+
 function agregarDinero() {
-    const nombre = document.getElementById("adminUser").value.trim();
-    const cantidad = Number(document.getElementById("adminAmount").value);
+
+    const nombre =
+        document.getElementById("adminUser").value.trim();
+
+    const cantidad =
+        Number(document.getElementById("adminAmount").value);
 
     if (!nombre || !cantidad) {
         alert("Completá el usuario y la cantidad 😭");
@@ -187,15 +406,31 @@ function agregarDinero() {
     }
 
     usuarios[nombre] += cantidad;
+
     actualizarRankingAdmin();
     actualizarTotalAdmin();
 
-    alert("Se agregaron ₲" + cantidad + " a " + nombre + " 💰");
+    alert(
+        "Se agregaron ₲" +
+        cantidad +
+        " a " +
+        nombre +
+        " 💰"
+    );
 }
 
+
+// =========================
+// QUITAR DINERO
+// =========================
+
 function quitarDinero() {
-    const nombre = document.getElementById("adminUser").value.trim();
-    const cantidad = Number(document.getElementById("adminAmount").value);
+
+    const nombre =
+        document.getElementById("adminUser").value.trim();
+
+    const cantidad =
+        Number(document.getElementById("adminAmount").value);
 
     if (!nombre || !cantidad) {
         alert("Completá el usuario y la cantidad 😭");
@@ -218,14 +453,28 @@ function quitarDinero() {
     }
 
     usuarios[nombre] -= cantidad;
+
     actualizarRankingAdmin();
     actualizarTotalAdmin();
-    actualizarHistorialAdmin();
-    alert("Se quitaron ₲" + cantidad + " a " + nombre + " 💸");
+
+    alert(
+        "Se quitaron ₲" +
+        cantidad +
+        " a " +
+        nombre +
+        " 💸"
+    );
 }
 
+
+// =========================
+// ELIMINAR USUARIO
+// =========================
+
 function eliminarUsuario() {
-    const nombre = document.getElementById("deleteUser").value.trim();
+
+    const nombre =
+        document.getElementById("deleteUser").value.trim();
 
     if (!nombre) {
         alert("Escribí el nombre del usuario.");
@@ -237,7 +486,13 @@ function eliminarUsuario() {
         return;
     }
 
-    if (!confirm("¿Seguro que querés eliminar a " + nombre + "?")) {
+    if (
+        !confirm(
+            "¿Seguro que querés eliminar a " +
+            nombre +
+            "?"
+        )
+    ) {
         return;
     }
 
@@ -251,12 +506,24 @@ function eliminarUsuario() {
     alert(nombre + " fue eliminado.");
 }
 
+
+// =========================
+// LIMPIAR INPUTS ADMIN
+// =========================
+
 function limpiarAdminInputs() {
+
     document.getElementById("adminUser").value = "";
     document.getElementById("adminAmount").value = "";
 }
 
+
+// =========================
+// CERRAR SESIÓN
+// =========================
+
 function cerrarSesion() {
+
     localStorage.removeItem("usuarioActual");
 
     document.getElementById("admin").style.display = "none";
@@ -266,91 +533,25 @@ function cerrarSesion() {
     document.getElementById("nameInput").value = "";
 }
 
-function mostrarBanco() {
-    const nombre = localStorage.getItem("usuarioActual");
 
-    document.getElementById("login").style.display = "none";
-    document.getElementById("admin").style.display = "none";
-    document.getElementById("bank").style.display = "block";
+// =========================
+// INICIO
+// =========================
 
-    document.getElementById("userName").textContent = nombre;
+cargarUsuarios().then(function() {
 
-    actualizarSaldo();
-    actualizarRanking();
-}   actualizarHistorial();
-
-function actualizarSaldo() {
-    const nombre = localStorage.getItem("usuarioActual");
-    document.getElementById("balance").textContent = usuarios[nombre];
-}
-
-function actualizarRanking() {
-    const ranking = document.getElementById("ranking");
-
-    const lista = Object.entries(usuarios)
-        .sort((a, b) => b[1] - a[1]);
-
-    ranking.innerHTML = "";
-
-    lista.forEach(function(usuario, index) {
-        ranking.innerHTML +=
-            "<p><strong>#" + (index + 1) + "</strong> " +
-            usuario[0] + " — ₲" + usuario[1] + "</p>";
-    });
-}
-
-async function transferir() {
-    const remitente = localStorage.getItem("usuarioActual");
-    const destinatario = document.getElementById("receiver").value.trim();
-    const cantidad = Number(document.getElementById("amount").value);
-
-    if (!destinatario || !cantidad) {
-        alert("Completá todos los campos 😭");
-        return;
-    }
-
-    try {
-        const respuesta = await fetch("/api/transferir", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                remitente,
-                destinatario,
-                cantidad
-            })
-        });
-
-        const datos = await respuesta.json();
-
-        if (!respuesta.ok) {
-            alert(datos.error);
-            return;
-        }
-
-        usuarios = datos.usuarios;
-
-        document.getElementById("receiver").value = "";
-        document.getElementById("amount").value = "";
-
-        actualizarSaldo();
-        actualizarRanking();
-        actualizarHistorial();
-        alert("Transferiste ₲" + cantidad + " a " + destinatario + " 💸");
-
-    } catch (error) {
-        alert("No se pudo conectar con Banco Grafonia 😭");
-        console.error(error);
-    }
-}
-
-cargarUsuarios().then(() => {
-    const usuarioActual = localStorage.getItem("usuarioActual");
+    const usuarioActual =
+        localStorage.getItem("usuarioActual");
 
     if (usuarioActual === "AdminGrafonia") {
+
         mostrarAdmin();
-    } else if (usuarioActual && usuarioActual in usuarios) {
+
+    } else if (
+        usuarioActual &&
+        usuarioActual in usuarios
+    ) {
+
         mostrarBanco();
     }
 });
