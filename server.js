@@ -33,33 +33,9 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 let usuarios = {};
+ 
 
-app.get("/api/usuarios", (req, res) => {
-    res.json(usuarios);
-});
-app.post("/api/usuarios", (req, res) => {
-    const { nombre } = req.body;
-
-    if (!nombre) {
-        return res.status(400).json({ error: "Falta el nombre" });
-    }
-
-    if (nombre === "AdminGrafonia") {
-        return res.status(400).json({ error: "Ese nombre está reservado" });
-    }
-
-    if (nombre in usuarios) {
-        return res.status(400).json({ error: "Ese usuario ya existe" });
-    }
-
-    usuarios[nombre] = 1000;
-
-    res.json({
-        mensaje: "Usuario creado",
-        usuarios: usuarios
-    });
-});
-app.post("/api/usuarios", (req, res) => {
+app.post("/api/usuarios", async (req, res) => {
     const { nombre } = req.body;
 
     if (!nombre) {
@@ -74,68 +50,43 @@ app.post("/api/usuarios", (req, res) => {
         });
     }
 
-    if (nombre in usuarios) {
-        return res.status(400).json({
-            error: "Ese usuario ya existe"
+    try {
+        const existe = await pool.query(
+            "SELECT nombre FROM usuarios WHERE nombre = $1",
+            [nombre]
+        );
+
+        if (existe.rows.length > 0) {
+            return res.status(400).json({
+                error: "Ese usuario ya existe"
+            });
+        }
+
+        await pool.query(
+            "INSERT INTO usuarios (nombre, dinero) VALUES ($1, $2)",
+            [nombre, 1000]
+        );
+
+        const resultado = await pool.query(
+            "SELECT nombre, dinero FROM usuarios"
+        );
+
+        const usuarios = {};
+
+        resultado.rows.forEach(function(usuario) {
+            usuarios[usuario.nombre] = usuario.dinero;
+        });
+
+        res.json({
+            mensaje: "Usuario creado",
+            usuarios: usuarios
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            error: "Error al crear el usuario"
         });
     }
-
-    usuarios[nombre] = 1000;
-
-    res.json({
-        mensaje: "Usuario creado",
-        usuarios: usuarios
-    });
-});
-app.post("/api/transferir", (req, res) => {
-    const { remitente, destinatario, cantidad } = req.body;
-
-    if (!remitente || !destinatario || !cantidad) {
-        return res.status(400).json({
-            error: "Faltan datos"
-        });
-    }
-
-    if (!(remitente in usuarios)) {
-        return res.status(404).json({
-            error: "El remitente no existe"
-        });
-    }
-
-    if (!(destinatario in usuarios)) {
-        return res.status(404).json({
-            error: "El destinatario no existe"
-        });
-    }
-
-    if (remitente === destinatario) {
-        return res.status(400).json({
-            error: "No podés transferirte dinero a vos mismo"
-        });
-    }
-
-    if (cantidad <= 0) {
-        return res.status(400).json({
-            error: "La cantidad debe ser mayor que 0"
-        });
-    }
-
-    if (usuarios[remitente] < cantidad) {
-        return res.status(400).json({
-            error: "No tenés suficiente dinero"
-        });
-    }
-
-    usuarios[remitente] -= cantidad;
-    usuarios[destinatario] += cantidad;
-
-    res.json({
-        mensaje: "Transferencia realizada",
-        usuarios: usuarios
-    });
-});
-prepararBaseDeDatos().then(() => {
-    app.listen(PORT, "0.0.0.0", () => {
-        console.log(`Banco Grafonia iniciado en el puerto ${PORT}`);
-    });
 });
