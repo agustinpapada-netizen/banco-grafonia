@@ -1,14 +1,39 @@
 const express = require("express");
 const path = require("path");
-
+const { Pool } = require("pg");
 const app = express();
 const PORT = process.env.PORT || 3000;
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
+});
+async function prepararBaseDeDatos() {
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS usuarios (
+            nombre TEXT PRIMARY KEY,
+            dinero INTEGER NOT NULL DEFAULT 1000
+        )
+    `);
 
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS transferencias (
+            id SERIAL PRIMARY KEY,
+            remitente TEXT NOT NULL,
+            destinatario TEXT NOT NULL,
+            cantidad INTEGER NOT NULL,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    console.log("Base de datos preparada 🗄️");
+}
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 let usuarios = {};
-let transferencias = [];
+
 app.get("/api/usuarios", (req, res) => {
     res.json(usuarios);
 });
@@ -104,22 +129,13 @@ app.post("/api/transferir", (req, res) => {
     usuarios[remitente] -= cantidad;
     usuarios[destinatario] += cantidad;
 
-    transferencias.push({
-    remitente: remitente,
-    destinatario: destinatario,
-    cantidad: cantidad,
-    fecha: new Date().toLocaleString("es-AR")
-});
-    
     res.json({
         mensaje: "Transferencia realizada",
         usuarios: usuarios
     });
 });
-
-app.get("/api/transferencias", (req, res) => {
-    res.json(transferencias);
-});
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Banco Grafonia iniciado en el puerto ${PORT}`);
+prepararBaseDeDatos().then(() => {
+    app.listen(PORT, "0.0.0.0", () => {
+        console.log(`Banco Grafonia iniciado en el puerto ${PORT}`);
+    });
 });
