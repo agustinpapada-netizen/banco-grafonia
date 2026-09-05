@@ -33,8 +33,28 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 let usuarios = {};
- 
 
+app.get("/api/usuarios", async (req, res) => {
+    try {
+        const resultado = await pool.query(
+            "SELECT nombre, dinero FROM usuarios"
+        );
+
+        const usuarios = {};
+
+        resultado.rows.forEach(function(usuario) {
+            usuarios[usuario.nombre] = usuario.dinero;
+        });
+
+        res.json(usuarios);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            error: "Error al cargar usuarios"
+        });
+    }
+}); 
 app.post("/api/usuarios", async (req, res) => {
     const { nombre } = req.body;
 
