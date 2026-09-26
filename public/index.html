@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Banco Grafonia</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -12,116 +14,235 @@
 
 <div class="container">
 
-```
-<h1>🏦 Banco Grafonia</h1>
-<p>Tu dinero. Tu banco. Tu Grafonia.</p>
-
-<!-- LOGIN -->
-<div id="login">
-    <h2>Bienvenido</h2>
-
-    <input
-        id="nameInput"
-        type="text"
-        placeholder="Escribí tu nombre"
-    >
-
-    <button onclick="entrar()">Entrar</button>
-</div>
+    <h1>🏦 Banco Grafonia</h1>
+    <p>Tu dinero. Tu banco. Tu Grafonia.</p>
 
 
-<!-- BANCO NORMAL -->
-<div id="bank" style="display: none;">
+    <!-- =========================
+         LOGIN
+    ========================== -->
 
-    <h2>Hola, <span id="userName"></span> 👋</h2>
+    <div id="login">
 
-    <div class="balance">
-        <p>Tu saldo</p>
-        <h2>₲ <span id="balance">0</span></h2>
+        <h2>Bienvenido</h2>
+
+        <input
+            id="nameInput"
+            type="text"
+            placeholder="Escribí tu nombre"
+        >
+
+        <input
+            id="adminPassword"
+            type="password"
+            placeholder="Contraseña de administrador"
+            style="display: none;"
+        >
+
+        <button onclick="entrar()">
+            Entrar
+        </button>
+
     </div>
 
-    <h2>🏆 Personas con más dinero</h2>
 
-    <div id="ranking"></div>
+    <!-- =========================
+         BANCO NORMAL
+    ========================== -->
 
-    <h2>💸 Transferir dinero</h2>
+    <div id="bank" style="display: none;">
 
-    <input
-        id="receiver"
-        type="text"
-        placeholder="Nombre del destinatario"
-    >
-
-    <input
-        id="amount"
-        type="number"
-        placeholder="Cantidad"
-    >
-
-    <button onclick="transferir()">Transferir</button>
-
-</div>
+        <h2>
+            Hola, <span id="userName"></span> 👋
+        </h2>
 
 
-<!-- PANEL DE ADMINISTRACIÓN -->
-<div id="admin" style="display: none;">
+        <div class="balance">
 
-    <h2>👑 Panel de Administración</h2>
+            <p>Tu saldo</p>
 
-    <div class="balance">
-        <p>Dinero total en circulación</p>
-        <h2>₲ <span id="adminTotal">0</span></h2>
+            <h2>
+                ₲ <span id="balance">0</span>
+            </h2>
+
+        </div>
+
+
+        <h2>🏆 Personas con más dinero</h2>
+
+        <div id="ranking"></div>
+
+
+        <h2>💸 Transferir dinero</h2>
+
+        <input
+            id="receiver"
+            type="text"
+            placeholder="Nombre del destinatario"
+        >
+
+        <input
+            id="amount"
+            type="number"
+            placeholder="Cantidad"
+            min="1"
+        >
+
+        <button onclick="transferir()">
+            Transferir
+        </button>
+
+
+        <h2>📜 Mis movimientos</h2>
+
+        <div
+            id="historial"
+            class="historial"
+        ></div>
+
+
+        <button
+            class="logout-button"
+            onclick="cerrarSesion()"
+        >
+            🚪 Cerrar sesión
+        </button>
+
     </div>
 
-    <h2>👥 Usuarios</h2>
 
-    <div id="adminRanking"></div>
+    <!-- =========================
+         ADMIN
+    ========================== -->
 
+    <div id="admin" style="display: none;">
 
-    <h2>💰 Administrar dinero</h2>
-
-    <input
-        id="adminUser"
-        type="text"
-        placeholder="Nombre del usuario"
-    >
-
-    <input
-        id="adminAmount"
-        type="number"
-        placeholder="Cantidad"
-    >
-
-    <button onclick="agregarDinero()">
-        ➕ Agregar dinero
-    </button>
-
-    <button onclick="quitarDinero()">
-        ➖ Quitar dinero
-    </button>
+        <h2>👑 Panel de Administración</h2>
 
 
-    <h2>🗑️ Eliminar usuario</h2>
+        <!-- ESTADÍSTICAS -->
 
-    <input
-        id="deleteUser"
-        type="text"
-        placeholder="Nombre del usuario"
-    >
+        <div class="stats">
 
-    <button onclick="eliminarUsuario()">
-        🗑️ Eliminar
-    </button>
+            <div class="stat">
+                <span>💰 Circulación</span>
+                <strong id="adminTotal">0</strong>
+            </div>
+
+            <div class="stat">
+                <span>👥 Usuarios</span>
+                <strong id="adminUsers">0</strong>
+            </div>
+
+            <div class="stat">
+                <span>💸 Transferencias</span>
+                <strong id="adminTransfers">0</strong>
+            </div>
+
+            <div class="stat">
+                <span>📊 Dinero transferido</span>
+                <strong id="adminTransferred">0</strong>
+            </div>
+
+        </div>
 
 
-    <h2>🚪 Sesión</h2>
+        <!-- USUARIOS -->
 
-    <button onclick="cerrarSesion()">
-        Cerrar sesión
-    </button>
+        <h2>👥 Usuarios</h2>
 
-</div>
-```
+        <div
+            id="adminRanking"
+            class="admin-list"
+        ></div>
+
+
+        <!-- ADMINISTRAR DINERO -->
+
+        <h2>💰 Administrar dinero</h2>
+
+        <input
+            id="adminUser"
+            type="text"
+            placeholder="Nombre del usuario"
+        >
+
+        <input
+            id="adminAmount"
+            type="number"
+            placeholder="Cantidad"
+            min="1"
+        >
+
+        <button onclick="agregarDinero()">
+            ➕ Agregar dinero
+        </button>
+
+        <button onclick="quitarDinero()">
+            ➖ Quitar dinero
+        </button>
+
+
+        <!-- ELIMINAR -->
+
+        <h2>🗑️ Eliminar usuario</h2>
+
+        <input
+            id="deleteUser"
+            type="text"
+            placeholder="Nombre del usuario"
+        >
+
+        <button onclick="eliminarUsuario()">
+            🗑️ Eliminar
+        </button>
+
+        <button
+            class="danger-button"
+            onclick="eliminarUsuariosSinNombre()"
+        >
+            🧹 Eliminar cuentas sin nombre
+        </button>
+
+
+        <!-- TRANSACCIONES -->
+
+        <h2>📜 Historial global</h2>
+
+        <p class="admin-warning">
+            🔒 Solo visible para el administrador
+        </p>
+
+        <div
+            id="adminHistorial"
+            class="historial"
+        ></div>
+
+
+        <!-- AUDITORÍA -->
+
+        <h2>🕵️ Auditoría del banco</h2>
+
+        <p class="admin-warning">
+            Acá queda registrado lo que hace el administrador.
+        </p>
+
+        <div
+            id="auditoria"
+            class="historial"
+        ></div>
+
+
+        <!-- SESIÓN -->
+
+        <button
+            class="logout-button"
+            onclick="cerrarSesion()"
+        >
+            🚪 Cerrar sesión
+        </button>
+
+    </div>
 
 </div>
 
