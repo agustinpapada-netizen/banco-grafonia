@@ -389,6 +389,15 @@ async function actualizarPerfil() {
             "₲" +
             resumen.dineroenviado;
 
+        document.getElementById("receivedMonth").textContent =
+    "₲" + resumen.dineroRecibido;
+
+document.getElementById("sentOperations").textContent =
+    resumen.enviados;
+
+document.getElementById("receivedOperations").textContent =
+    resumen.recibidos;
+
     } catch (error) {
 
         console.error(error);
