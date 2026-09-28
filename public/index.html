@@ -2,12 +2,21 @@
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Banco Grafonia</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
 </head>
 
 <body>
@@ -15,7 +24,10 @@
 <div class="container">
 
     <h1>🏦 Banco Grafonia</h1>
-    <p>Tu dinero. Tu banco. Tu Grafonia.</p>
+
+    <p>
+        Tu dinero. Tu banco. Tu Grafonia.
+    </p>
 
 
     <!-- =========================
@@ -36,7 +48,7 @@
             id="adminPassword"
             type="password"
             placeholder="Contraseña de administrador"
-            style="display: none;"
+            style="display:none;"
         >
 
         <button onclick="entrar()">
@@ -50,30 +62,140 @@
          BANCO NORMAL
     ========================== -->
 
-    <div id="bank" style="display: none;">
+    <div
+        id="bank"
+        style="display:none;"
+    >
 
         <h2>
-            Hola, <span id="userName"></span> 👋
+            Hola,
+            <span id="userName"></span>
+            👋
         </h2>
 
 
+        <!-- SALDO -->
+
         <div class="balance">
 
-            <p>Tu saldo</p>
+            <p>Dinero disponible</p>
 
             <h2>
-                ₲ <span id="balance">0</span>
+                ₲
+                <span id="balance">0</span>
             </h2>
 
         </div>
 
 
-        <h2>🏆 Personas con más dinero</h2>
+        <!-- PERFIL -->
+
+        <div class="card">
+
+            <h2>👤 Mi perfil</h2>
+
+            <div class="profile-grid">
+
+                <div>
+                    <span>Usuario</span>
+                    <strong id="profileName">-</strong>
+                </div>
+
+                <div>
+                    <span>Empleo</span>
+                    <strong id="profileJob">-</strong>
+                </div>
+
+                <div>
+                    <span>Sueldo diario</span>
+                    <strong id="profileSalary">₲0</strong>
+                </div>
+
+                <div>
+                    <span>Ahorros</span>
+                    <strong id="profileSavings">₲0</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- RESUMEN -->
+
+        <div class="card">
+
+            <h2>📊 Resumen del mes</h2>
+
+            <div class="stats">
+
+                <div class="stat">
+
+                    <span>💸 Enviado</span>
+
+                    <strong
+                        id="sentMonth"
+                    >
+                        ₲0
+                    </strong>
+
+                </div>
+
+                <div class="stat">
+
+                    <span>📥 Recibido</span>
+
+                    <strong
+                        id="receivedMonth"
+                    >
+                        ₲0
+                    </strong>
+
+                </div>
+
+                <div class="stat">
+
+                    <span>📤 Operaciones</span>
+
+                    <strong
+                        id="sentOperations"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+                <div class="stat">
+
+                    <span>📥 Recibos</span>
+
+                    <strong
+                        id="receivedOperations"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- RANKING -->
+
+        <h2>
+            🏆 Personas con más dinero
+        </h2>
 
         <div id="ranking"></div>
 
 
-        <h2>💸 Transferir dinero</h2>
+        <!-- TRANSFERENCIA -->
+
+        <h2>
+            💸 Transferir dinero
+        </h2>
 
         <input
             id="receiver"
@@ -88,12 +210,190 @@
             min="1"
         >
 
+        <input
+            id="concept"
+            type="text"
+            maxlength="100"
+            placeholder="Concepto (opcional)"
+        >
+
         <button onclick="transferir()">
-            Transferir
+            💸 Transferir
         </button>
 
 
-        <h2>📜 Mis movimientos</h2>
+        <!-- AHORROS -->
+
+        <div class="card">
+
+            <h2>
+                🏦 Cuenta de ahorro
+            </h2>
+
+            <p>
+                Guardá dinero separado de tu saldo disponible.
+            </p>
+
+            <input
+                id="savingsAmount"
+                type="number"
+                min="1"
+                placeholder="Cantidad"
+            >
+
+            <button
+                onclick="moverAhorro('depositar')"
+            >
+                ➕ Guardar
+            </button>
+
+            <button
+                onclick="moverAhorro('retirar')"
+            >
+                ➖ Retirar
+            </button>
+
+        </div>
+
+
+        <!-- SOLICITAR DINERO -->
+
+        <div class="card">
+
+            <h2>
+                🧑‍💼 Solicitar dinero
+            </h2>
+
+            <input
+                id="requestUser"
+                type="text"
+                placeholder="Usuario"
+            >
+
+            <input
+                id="requestAmount"
+                type="number"
+                min="1"
+                placeholder="Cantidad"
+            >
+
+            <input
+                id="requestReason"
+                type="text"
+                maxlength="150"
+                placeholder="Motivo (opcional)"
+            >
+
+            <button
+                onclick="solicitarDinero()"
+            >
+                🧑‍💼 Solicitar
+            </button>
+
+        </div>
+
+
+        <!-- SOLICITUDES -->
+
+        <div class="card">
+
+            <h2>
+                📬 Solicitudes
+            </h2>
+
+            <div
+                id="solicitudes"
+                class="historial"
+            ></div>
+
+        </div>
+
+
+        <!-- NOTIFICACIONES -->
+
+        <div class="card">
+
+            <h2>
+                🔔 Notificaciones
+
+                <span
+                    id="notificationBadge"
+                    class="notification-badge"
+                >
+                    0
+                </span>
+            </h2>
+
+            <button
+                onclick="marcarNotificacionesLeidas()"
+            >
+                ✓ Marcar todas como leídas
+            </button>
+
+            <div
+                id="notificaciones"
+                class="historial"
+            ></div>
+
+        </div>
+
+
+        <!-- ECONOMÍA -->
+
+        <div class="card">
+
+            <h2>
+                📈 Economía de Grafonia
+            </h2>
+
+            <div class="stats">
+
+                <div class="stat">
+
+                    <span>👥 Usuarios</span>
+
+                    <strong
+                        id="economyUsers"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+                <div class="stat">
+
+                    <span>💰 Dinero total</span>
+
+                    <strong
+                        id="economyMoney"
+                    >
+                        ₲0
+                    </strong>
+
+                </div>
+
+                <div class="stat">
+
+                    <span>💸 Transferencias</span>
+
+                    <strong
+                        id="economyTransfers"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- HISTORIAL -->
+
+        <h2>
+            📜 Mis movimientos
+        </h2>
 
         <div
             id="historial"
@@ -115,9 +415,14 @@
          ADMIN
     ========================== -->
 
-    <div id="admin" style="display: none;">
+    <div
+        id="admin"
+        style="display:none;"
+    >
 
-        <h2>👑 Panel de Administración</h2>
+        <h2>
+            👑 Panel de Administración
+        </h2>
 
 
         <!-- ESTADÍSTICAS -->
@@ -149,7 +454,9 @@
 
         <!-- USUARIOS -->
 
-        <h2>👥 Usuarios</h2>
+        <h2>
+            👥 Usuarios
+        </h2>
 
         <div
             id="adminRanking"
@@ -159,7 +466,9 @@
 
         <!-- ADMINISTRAR DINERO -->
 
-        <h2>💰 Administrar dinero</h2>
+        <h2>
+            💰 Administrar dinero
+        </h2>
 
         <input
             id="adminUser"
@@ -170,22 +479,73 @@
         <input
             id="adminAmount"
             type="number"
-            placeholder="Cantidad"
             min="1"
+            placeholder="Cantidad"
         >
 
-        <button onclick="agregarDinero()">
+        <button
+            onclick="agregarDinero()"
+        >
             ➕ Agregar dinero
         </button>
 
-        <button onclick="quitarDinero()">
+        <button
+            onclick="quitarDinero()"
+        >
             ➖ Quitar dinero
         </button>
 
 
+        <!-- EMPLEOS -->
+
+        <div class="card">
+
+            <h2>
+                👔 Administrar empleos
+            </h2>
+
+            <p>
+                El administrador controla el empleo y sueldo de cada usuario.
+            </p>
+
+            <input
+                id="jobUser"
+                type="text"
+                placeholder="Usuario"
+            >
+
+            <input
+                id="jobName"
+                type="text"
+                placeholder="Trabajo"
+            >
+
+            <input
+                id="jobSalary"
+                type="number"
+                min="0"
+                placeholder="Sueldo diario"
+            >
+
+            <button
+                onclick="guardarEmpleo()"
+            >
+                💼 Guardar empleo
+            </button>
+
+            <div
+                id="adminEmpleos"
+                class="historial"
+            ></div>
+
+        </div>
+
+
         <!-- ELIMINAR -->
 
-        <h2>🗑️ Eliminar usuario</h2>
+        <h2>
+            🗑️ Eliminar usuario
+        </h2>
 
         <input
             id="deleteUser"
@@ -193,7 +553,9 @@
             placeholder="Nombre del usuario"
         >
 
-        <button onclick="eliminarUsuario()">
+        <button
+            onclick="eliminarUsuario()"
+        >
             🗑️ Eliminar
         </button>
 
@@ -207,7 +569,9 @@
 
         <!-- TRANSACCIONES -->
 
-        <h2>📜 Historial global</h2>
+        <h2>
+            📜 Historial global
+        </h2>
 
         <p class="admin-warning">
             🔒 Solo visible para el administrador
@@ -221,7 +585,9 @@
 
         <!-- AUDITORÍA -->
 
-        <h2>🕵️ Auditoría del banco</h2>
+        <h2>
+            🕵️ Auditoría del banco
+        </h2>
 
         <p class="admin-warning">
             Acá queda registrado lo que hace el administrador.
@@ -245,6 +611,7 @@
     </div>
 
 </div>
+
 
 <script src="app.js"></script>
 
