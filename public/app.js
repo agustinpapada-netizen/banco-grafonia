@@ -1,5 +1,7 @@
 let usuarios = {};
 let adminToken = localStorage.getItem("adminToken");
+let intervaloCliente = null;
+
 
 // =========================
 // CARGAR USUARIOS
@@ -9,13 +11,17 @@ async function cargarUsuarios() {
 
     try {
 
-        const respuesta = await fetch("/api/usuarios");
+        const respuesta =
+            await fetch("/api/usuarios");
 
         if (!respuesta.ok) {
-            throw new Error("No se pudieron cargar los usuarios");
+            throw new Error(
+                "No se pudieron cargar los usuarios"
+            );
         }
 
-        usuarios = await respuesta.json();
+        usuarios =
+            await respuesta.json();
 
     } catch (error) {
 
@@ -49,22 +55,27 @@ async function entrar() {
         return;
     }
 
-
     // =========================
     // ADMIN
     // =========================
 
-    if (nombre === "AdminGrafonia") {
+    if (
+        nombre ===
+        "AdminGrafonia"
+    ) {
 
         const passwordInput =
-            document.getElementById("adminPassword");
+            document.getElementById(
+                "adminPassword"
+            );
 
         const password =
             passwordInput.value;
 
         if (!password) {
 
-            passwordInput.style.display = "block";
+            passwordInput.style.display =
+                "block";
 
             alert(
                 "Escribí la contraseña de administrador."
@@ -76,18 +87,21 @@ async function entrar() {
         try {
 
             const respuesta =
-                await fetch("/api/admin/login", {
+                await fetch(
+                    "/api/admin/login",
+                    {
+                        method: "POST",
 
-                    method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        password: password
-                    })
-                });
+                        body: JSON.stringify({
+                            password
+                        })
+                    }
+                );
 
             const datos =
                 await respuesta.json();
@@ -99,7 +113,8 @@ async function entrar() {
                 return;
             }
 
-            adminToken = datos.token;
+            adminToken =
+                datos.token;
 
             localStorage.setItem(
                 "adminToken",
@@ -137,18 +152,21 @@ async function entrar() {
     try {
 
         const respuesta =
-            await fetch("/api/usuarios", {
+            await fetch(
+                "/api/usuarios",
+                {
+                    method: "POST",
 
-                method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({
-                    nombre: nombre
-                })
-            });
+                    body: JSON.stringify({
+                        nombre
+                    })
+                }
+            );
 
         const datos =
             await respuesta.json();
@@ -160,7 +178,8 @@ async function entrar() {
             return;
         }
 
-        usuarios = datos.usuarios;
+        usuarios =
+            datos.usuarios;
 
         localStorage.setItem(
             "usuarioActual",
@@ -207,9 +226,35 @@ function mostrarBanco() {
         .getElementById("userName")
         .textContent = nombre;
 
+    actualizarCliente();
+
+    if (intervaloCliente) {
+        clearInterval(intervaloCliente);
+    }
+
+    intervaloCliente =
+        setInterval(
+            actualizarCliente,
+            30000
+        );
+}
+
+
+// =========================
+// ACTUALIZAR CLIENTE
+// =========================
+
+async function actualizarCliente() {
+
+    await cargarUsuarios();
+
     actualizarSaldo();
     actualizarRanking();
     actualizarHistorial();
+    actualizarPerfil();
+    actualizarNotificaciones();
+    actualizarSolicitudes();
+    actualizarEconomia();
 }
 
 
@@ -224,7 +269,10 @@ function actualizarSaldo() {
             "usuarioActual"
         );
 
-    if (usuarios[nombre] !== undefined) {
+    if (
+        usuarios[nombre] !==
+        undefined
+    ) {
 
         document
             .getElementById("balance")
@@ -245,11 +293,18 @@ function actualizarRanking() {
             "ranking"
         );
 
+    if (!ranking) {
+        return;
+    }
+
     ranking.innerHTML = "";
 
     const lista =
         Object.entries(usuarios)
-            .sort((a, b) => b[1] - a[1]);
+            .sort(
+                (a, b) =>
+                    b[1] - a[1]
+            );
 
     if (lista.length === 0) {
 
@@ -259,18 +314,228 @@ function actualizarRanking() {
         return;
     }
 
-    lista.forEach(function(usuario, index) {
+    lista.forEach(
+        function(usuario, index) {
 
-        ranking.innerHTML +=
-            "<p>" +
-            "<strong>#" +
-            (index + 1) +
-            "</strong> " +
-            usuario[0] +
-            " — ₲" +
-            usuario[1] +
-            "</p>";
-    });
+            ranking.innerHTML +=
+                "<p>" +
+                "<strong>#" +
+                (index + 1) +
+                "</strong> " +
+                escaparHTML(usuario[0]) +
+                " — ₲" +
+                usuario[1] +
+                "</p>";
+        }
+    );
+}
+
+
+// =========================
+// PERFIL
+// =========================
+
+async function actualizarPerfil() {
+
+    const nombre =
+        localStorage.getItem(
+            "usuarioActual"
+        );
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/perfil?usuario=" +
+                encodeURIComponent(nombre)
+            );
+
+        if (!respuesta.ok) {
+            return;
+        }
+
+        const datos =
+            await respuesta.json();
+
+        const cuenta =
+            datos.cuenta;
+
+        const resumen =
+            datos.resumen;
+
+        document
+            .getElementById("profileName")
+            .textContent =
+            cuenta.nombre;
+
+        document
+            .getElementById("profileJob")
+            .textContent =
+            cuenta.trabajo;
+
+        document
+            .getElementById("profileSalary")
+            .textContent =
+            "₲" + cuenta.sueldo;
+
+        document
+            .getElementById("profileSavings")
+            .textContent =
+            "₲" + cuenta.ahorro;
+
+        document
+            .getElementById("sentMonth")
+            .textContent =
+            "₲" +
+            resumen.dineroenviado;
+
+    } catch (error) {
+
+        console.error(error);
+    }
+}
+
+
+// =========================
+// NOTIFICACIONES
+// =========================
+
+async function actualizarNotificaciones() {
+
+    const contenedor =
+        document.getElementById(
+            "notificaciones"
+        );
+
+    const badge =
+        document.getElementById(
+            "notificationBadge"
+        );
+
+    if (!contenedor) {
+        return;
+    }
+
+    const usuario =
+        localStorage.getItem(
+            "usuarioActual"
+        );
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/notificaciones?usuario=" +
+                encodeURIComponent(usuario)
+            );
+
+        const notificaciones =
+            await respuesta.json();
+
+        contenedor.innerHTML = "";
+
+        let noLeidas = 0;
+
+        if (
+            Array.isArray(
+                notificaciones
+            )
+        ) {
+
+            notificaciones.forEach(
+                function(n) {
+
+                    if (!n.leida) {
+                        noLeidas++;
+                    }
+
+                    contenedor.innerHTML +=
+                        "<div class='notification " +
+                        (
+                            n.leida
+                                ? ""
+                                : "unread"
+                        ) +
+                        "'>" +
+
+                        "<strong>" +
+                        escaparHTML(
+                            n.titulo
+                        ) +
+                        "</strong>" +
+
+                        "<p>" +
+                        escaparHTML(
+                            n.mensaje
+                        ) +
+                        "</p>" +
+
+                        "<small>" +
+                        n.fecha +
+                        "</small>" +
+
+                        "</div>";
+                }
+            );
+        }
+
+        if (
+            notificaciones.length === 0
+        ) {
+
+            contenedor.innerHTML =
+                "<p>No tenés notificaciones.</p>";
+        }
+
+        if (badge) {
+
+            badge.textContent =
+                noLeidas;
+
+            badge.style.display =
+                noLeidas > 0
+                    ? "inline-block"
+                    : "none";
+        }
+
+    } catch (error) {
+
+        console.error(error);
+    }
+}
+
+
+async function marcarNotificacionesLeidas() {
+
+    const usuario =
+        localStorage.getItem(
+            "usuarioActual"
+        );
+
+    try {
+
+        await fetch(
+            "/api/notificaciones/leidas",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    usuario
+                })
+            }
+        );
+
+        actualizarNotificaciones();
+
+    } catch (error) {
+
+        console.error(error);
+    }
 }
 
 
@@ -299,7 +564,9 @@ async function actualizarHistorial() {
         const respuesta =
             await fetch(
                 "/api/transferencias/mias?usuario=" +
-                encodeURIComponent(usuarioActual)
+                encodeURIComponent(
+                    usuarioActual
+                )
             );
 
         const transferencias =
@@ -308,7 +575,9 @@ async function actualizarHistorial() {
         historial.innerHTML = "";
 
         if (
-            !Array.isArray(transferencias) ||
+            !Array.isArray(
+                transferencias
+            ) ||
             transferencias.length === 0
         ) {
 
@@ -318,40 +587,66 @@ async function actualizarHistorial() {
             return;
         }
 
-        transferencias.forEach(function(t) {
+        transferencias.forEach(
+            function(t) {
 
-            if (
-                t.remitente ===
-                usuarioActual
-            ) {
+                if (
+                    t.remitente ===
+                    usuarioActual
+                ) {
 
-                historial.innerHTML +=
-                    "<div class='movimiento'>" +
-                    "💸 Enviaste ₲" +
-                    t.cantidad +
-                    " a <strong>" +
-                    escaparHTML(t.destinatario) +
-                    "</strong>" +
-                    "<small>" +
-                    t.fecha +
-                    "</small>" +
-                    "</div>";
+                    historial.innerHTML +=
+                        "<div class='movimiento'>" +
+                        "💸 Enviaste ₲" +
+                        t.cantidad +
+                        " a <strong>" +
+                        escaparHTML(
+                            t.destinatario
+                        ) +
+                        "</strong>" +
 
-            } else {
+                        (
+                            t.concepto
+                                ? "<br>📝 " +
+                                  escaparHTML(
+                                      t.concepto
+                                  )
+                                : ""
+                        ) +
 
-                historial.innerHTML +=
-                    "<div class='movimiento'>" +
-                    "📥 Recibiste ₲" +
-                    t.cantidad +
-                    " de <strong>" +
-                    escaparHTML(t.remitente) +
-                    "</strong>" +
-                    "<small>" +
-                    t.fecha +
-                    "</small>" +
-                    "</div>";
+                        "<small>" +
+                        t.fecha +
+                        "</small>" +
+                        "</div>";
+
+                } else {
+
+                    historial.innerHTML +=
+                        "<div class='movimiento'>" +
+                        "📥 Recibiste ₲" +
+                        t.cantidad +
+                        " de <strong>" +
+                        escaparHTML(
+                            t.remitente
+                        ) +
+                        "</strong>" +
+
+                        (
+                            t.concepto
+                                ? "<br>📝 " +
+                                  escaparHTML(
+                                      t.concepto
+                                  )
+                                : ""
+                        ) +
+
+                        "<small>" +
+                        t.fecha +
+                        "</small>" +
+                        "</div>";
+                }
             }
-        });
+        );
 
     } catch (error) {
 
@@ -387,7 +682,16 @@ async function transferir() {
                 .value
         );
 
-    if (!destinatario || !cantidad) {
+    const concepto =
+        document
+            .getElementById("concept")
+            .value
+            .trim();
+
+    if (
+        !destinatario ||
+        !cantidad
+    ) {
 
         alert(
             "Completá todos los campos 😭"
@@ -405,12 +709,28 @@ async function transferir() {
         return;
     }
 
-    if (destinatario === remitente) {
+    if (
+        destinatario ===
+        remitente
+    ) {
 
         alert(
             "No podés transferirte dinero a vos mismo 😭"
         );
 
+        return;
+    }
+
+    const confirmar =
+        confirm(
+            "¿Confirmás transferir ₲" +
+            cantidad +
+            " a " +
+            destinatario +
+            "?"
+        );
+
+    if (!confirmar) {
         return;
     }
 
@@ -423,13 +743,15 @@ async function transferir() {
                     method: "POST",
 
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type":
+                            "application/json"
                     },
 
                     body: JSON.stringify({
                         remitente,
                         destinatario,
-                        cantidad
+                        cantidad,
+                        concepto
                     })
                 }
             );
@@ -455,9 +777,11 @@ async function transferir() {
             .getElementById("amount")
             .value = "";
 
-        actualizarSaldo();
-        actualizarRanking();
-        actualizarHistorial();
+        document
+            .getElementById("concept")
+            .value = "";
+
+        actualizarCliente();
 
         alert(
             "Transferiste ₲" +
@@ -479,10 +803,520 @@ async function transferir() {
 
 
 // =========================
+// AHORRO
+// =========================
+
+async function moverAhorro(tipo) {
+
+    const usuario =
+        localStorage.getItem(
+            "usuarioActual"
+        );
+
+    const cantidad =
+        Number(
+            document
+                .getElementById(
+                    "savingsAmount"
+                )
+                .value
+        );
+
+    if (
+        !cantidad ||
+        cantidad <= 0
+    ) {
+
+        alert(
+            "Escribí una cantidad válida."
+        );
+
+        return;
+    }
+
+    const endpoint =
+        tipo === "depositar"
+            ? "/api/ahorros/depositar"
+            : "/api/ahorros/retirar";
+
+    try {
+
+        const respuesta =
+            await fetch(
+                endpoint,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        usuario,
+                        cantidad
+                    })
+                }
+            );
+
+        const datos =
+            await respuesta.json();
+
+        if (!respuesta.ok) {
+
+            alert(datos.error);
+
+            return;
+        }
+
+        document
+            .getElementById(
+                "savingsAmount"
+            )
+            .value = "";
+
+        await actualizarCliente();
+
+        alert(
+            tipo === "depositar"
+                ? "Guardaste ₲" +
+                  cantidad +
+                  " 💰"
+                : "Retiraste ₲" +
+                  cantidad +
+                  " 💸"
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "No se pudo modificar el ahorro."
+        );
+    }
+}
+
+
+// =========================
+// ECONOMÍA
+// =========================
+
+async function actualizarEconomia() {
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/economia"
+            );
+
+        if (!respuesta.ok) {
+            return;
+        }
+
+        const datos =
+            await respuesta.json();
+
+        document
+            .getElementById(
+                "economyUsers"
+            )
+            .textContent =
+            datos.usuarios;
+
+        document
+            .getElementById(
+                "economyMoney"
+            )
+            .textContent =
+            "₲" +
+            datos.dineroTotal;
+
+        document
+            .getElementById(
+                "economyTransfers"
+            )
+            .textContent =
+            datos.transferencias;
+
+    } catch (error) {
+
+        console.error(error);
+    }
+}
+
+
+// =========================
+// SOLICITUDES
+// =========================
+
+async function actualizarSolicitudes() {
+
+    const contenedor =
+        document.getElementById(
+            "solicitudes"
+        );
+
+    if (!contenedor) {
+        return;
+    }
+
+    const usuario =
+        localStorage.getItem(
+            "usuarioActual"
+        );
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/solicitudes?usuario=" +
+                encodeURIComponent(
+                    usuario
+                )
+            );
+
+        const solicitudes =
+            await respuesta.json();
+
+        contenedor.innerHTML = "";
+
+        if (
+            !Array.isArray(
+                solicitudes
+            ) ||
+            solicitudes.length === 0
+        ) {
+
+            contenedor.innerHTML =
+                "<p>No hay solicitudes.</p>";
+
+            return;
+        }
+
+        solicitudes.forEach(
+            function(s) {
+
+                const soyDestinatario =
+                    s.destinatario ===
+                    usuario;
+
+                let botones = "";
+
+                if (
+                    soyDestinatario &&
+                    s.estado ===
+                    "PENDIENTE"
+                ) {
+
+                    botones =
+                        "<button onclick='aceptarSolicitud(" +
+                        s.id +
+                        ")'>✅ Aceptar</button>" +
+
+                        "<button onclick='rechazarSolicitud(" +
+                        s.id +
+                        ")'>❌ Rechazar</button>";
+                }
+
+                contenedor.innerHTML +=
+                    "<div class='solicitud'>" +
+
+                    "<strong>" +
+                    (
+                        soyDestinatario
+                            ? "🧑‍💼 " +
+                              escaparHTML(
+                                  s.solicitante
+                              ) +
+                              " te solicita"
+                            : "📤 Solicitaste"
+                    ) +
+                    "</strong>" +
+
+                    "<h3>₲" +
+                    s.cantidad +
+                    "</h3>" +
+
+                    (
+                        s.motivo
+                            ? "<p>📝 " +
+                              escaparHTML(
+                                  s.motivo
+                              ) +
+                              "</p>"
+                            : ""
+                    ) +
+
+                    "<span class='estado-" +
+                    s.estado.toLowerCase() +
+                    "'>" +
+                    s.estado +
+                    "</span>" +
+
+                    "<small>" +
+                    s.fecha +
+                    "</small>" +
+
+                    botones +
+
+                    "</div>";
+            }
+        );
+
+    } catch (error) {
+
+        console.error(error);
+    }
+}
+
+
+async function solicitarDinero() {
+
+    const solicitante =
+        localStorage.getItem(
+            "usuarioActual"
+        );
+
+    const destinatario =
+        document
+            .getElementById(
+                "requestUser"
+            )
+            .value
+            .trim();
+
+    const cantidad =
+        Number(
+            document
+                .getElementById(
+                    "requestAmount"
+                )
+                .value
+        );
+
+    const motivo =
+        document
+            .getElementById(
+                "requestReason"
+            )
+            .value
+            .trim();
+
+    if (
+        !destinatario ||
+        !cantidad
+    ) {
+
+        alert(
+            "Completá el usuario y la cantidad."
+        );
+
+        return;
+    }
+
+    if (cantidad <= 0) {
+
+        alert(
+            "La cantidad debe ser mayor que 0."
+        );
+
+        return;
+    }
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/solicitudes",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        solicitante,
+                        destinatario,
+                        cantidad,
+                        motivo
+                    })
+                }
+            );
+
+        const datos =
+            await respuesta.json();
+
+        if (!respuesta.ok) {
+
+            alert(datos.error);
+
+            return;
+        }
+
+        document
+            .getElementById(
+                "requestUser"
+            )
+            .value = "";
+
+        document
+            .getElementById(
+                "requestAmount"
+            )
+            .value = "";
+
+        document
+            .getElementById(
+                "requestReason"
+            )
+            .value = "";
+
+        actualizarSolicitudes();
+
+        alert(
+            "Solicitud enviada 🧑‍💼"
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "No se pudo enviar la solicitud."
+        );
+    }
+}
+
+
+async function aceptarSolicitud(id) {
+
+    const usuario =
+        localStorage.getItem(
+            "usuarioActual"
+        );
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/solicitudes/" +
+                id +
+                "/aceptar",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        usuario
+                    })
+                }
+            );
+
+        const datos =
+            await respuesta.json();
+
+        if (!respuesta.ok) {
+
+            alert(datos.error);
+
+            return;
+        }
+
+        await actualizarCliente();
+
+        alert(
+            "Solicitud aceptada 💸"
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "No se pudo aceptar la solicitud."
+        );
+    }
+}
+
+
+async function rechazarSolicitud(id) {
+
+    const usuario =
+        localStorage.getItem(
+            "usuarioActual"
+        );
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/solicitudes/" +
+                id +
+                "/rechazar",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        usuario
+                    })
+                }
+            );
+
+        const datos =
+            await respuesta.json();
+
+        if (!respuesta.ok) {
+
+            alert(datos.error);
+
+            return;
+        }
+
+        actualizarSolicitudes();
+
+        alert(
+            "Solicitud rechazada."
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "No se pudo rechazar la solicitud."
+        );
+    }
+}
+
+
+// =========================
 // MOSTRAR ADMIN
 // =========================
 
 function mostrarAdmin() {
+
+    if (intervaloCliente) {
+
+        clearInterval(
+            intervaloCliente
+        );
+
+        intervaloCliente =
+            null;
+    }
 
     document
         .getElementById("login")
@@ -500,6 +1334,7 @@ function mostrarAdmin() {
     actualizarEstadisticasAdmin();
     actualizarHistorialAdmin();
     actualizarAuditoria();
+    actualizarEmpleosAdmin();
 }
 
 
@@ -514,11 +1349,18 @@ function actualizarUsuariosAdmin() {
             "adminRanking"
         );
 
+    if (!ranking) {
+        return;
+    }
+
     ranking.innerHTML = "";
 
     const lista =
         Object.entries(usuarios)
-            .sort((a, b) => b[1] - a[1]);
+            .sort(
+                (a, b) =>
+                    b[1] - a[1]
+            );
 
     if (lista.length === 0) {
 
@@ -528,23 +1370,25 @@ function actualizarUsuariosAdmin() {
         return;
     }
 
-    lista.forEach(function(usuario, index) {
+    lista.forEach(
+        function(usuario, index) {
 
-        const nombre =
-            usuario[0] === ""
-                ? "(SIN NOMBRE)"
-                : usuario[0];
+            const nombre =
+                usuario[0] === ""
+                    ? "(SIN NOMBRE)"
+                    : usuario[0];
 
-        ranking.innerHTML +=
-            "<div class='admin-user'>" +
-            "<strong>#" +
-            (index + 1) +
-            "</strong> " +
-            escaparHTML(nombre) +
-            " — ₲" +
-            usuario[1] +
-            "</div>";
-    });
+            ranking.innerHTML +=
+                "<div class='admin-user'>" +
+                "<strong>#" +
+                (index + 1) +
+                "</strong> " +
+                escaparHTML(nombre) +
+                " — ₲" +
+                usuario[1] +
+                "</div>";
+        }
+    );
 }
 
 
@@ -579,22 +1423,30 @@ async function actualizarEstadisticasAdmin() {
             await respuesta.json();
 
         document
-            .getElementById("adminTotal")
+            .getElementById(
+                "adminTotal"
+            )
             .textContent =
             datos.dineroEnCirculacion;
 
         document
-            .getElementById("adminUsers")
+            .getElementById(
+                "adminUsers"
+            )
             .textContent =
             datos.usuarios;
 
         document
-            .getElementById("adminTransfers")
+            .getElementById(
+                "adminTransfers"
+            )
             .textContent =
             datos.transferencias;
 
         document
-            .getElementById("adminTransferred")
+            .getElementById(
+                "adminTransferred"
+            )
             .textContent =
             datos.dineroTransferido;
 
@@ -606,7 +1458,7 @@ async function actualizarEstadisticasAdmin() {
 
 
 // =========================
-// HISTORIAL GLOBAL ADMIN
+// HISTORIAL ADMIN
 // =========================
 
 async function actualizarHistorialAdmin() {
@@ -616,7 +1468,10 @@ async function actualizarHistorialAdmin() {
             "adminHistorial"
         );
 
-    if (!historial || !adminToken) {
+    if (
+        !historial ||
+        !adminToken
+    ) {
         return;
     }
 
@@ -646,7 +1501,9 @@ async function actualizarHistorialAdmin() {
 
         historial.innerHTML = "";
 
-        if (transferencias.length === 0) {
+        if (
+            transferencias.length === 0
+        ) {
 
             historial.innerHTML =
                 "<p>No hay transferencias todavía.</p>";
@@ -654,22 +1511,37 @@ async function actualizarHistorialAdmin() {
             return;
         }
 
-        transferencias.forEach(function(t) {
+        transferencias.forEach(
+            function(t) {
 
-            historial.innerHTML +=
-                "<div class='movimiento'>" +
-                "💸 <strong>" +
-                escaparHTML(t.remitente) +
-                "</strong> → <strong>" +
-                escaparHTML(t.destinatario) +
-                "</strong>" +
-                ": ₲" +
-                t.cantidad +
-                "<small>" +
-                t.fecha +
-                "</small>" +
-                "</div>";
-        });
+                historial.innerHTML +=
+                    "<div class='movimiento'>" +
+                    "💸 <strong>" +
+                    escaparHTML(
+                        t.remitente
+                    ) +
+                    "</strong> → <strong>" +
+                    escaparHTML(
+                        t.destinatario
+                    ) +
+                    "</strong>: ₲" +
+                    t.cantidad +
+
+                    (
+                        t.concepto
+                            ? "<br>📝 " +
+                              escaparHTML(
+                                  t.concepto
+                              )
+                            : ""
+                    ) +
+
+                    "<small>" +
+                    t.fecha +
+                    "</small>" +
+                    "</div>";
+            }
+        );
 
     } catch (error) {
 
@@ -692,7 +1564,10 @@ async function actualizarAuditoria() {
             "auditoria"
         );
 
-    if (!contenedor || !adminToken) {
+    if (
+        !contenedor ||
+        !adminToken
+    ) {
         return;
     }
 
@@ -718,7 +1593,9 @@ async function actualizarAuditoria() {
 
         contenedor.innerHTML = "";
 
-        if (registros.length === 0) {
+        if (
+            registros.length === 0
+        ) {
 
             contenedor.innerHTML =
                 "<p>No hay registros todavía.</p>";
@@ -726,64 +1603,288 @@ async function actualizarAuditoria() {
             return;
         }
 
-        registros.forEach(function(r) {
+        registros.forEach(
+            function(r) {
 
-            let icono = "📋";
+                let icono =
+                    "📋";
 
-            if (
-                r.tipo ===
-                "DINERO_AGREGADO"
-            ) {
-                icono = "➕";
+                if (
+                    r.tipo ===
+                    "DINERO_AGREGADO"
+                ) {
+                    icono = "➕";
+                }
+
+                if (
+                    r.tipo ===
+                    "DINERO_QUITADO"
+                ) {
+                    icono = "➖";
+                }
+
+                if (
+                    r.tipo ===
+                    "SUELDO_PAGADO"
+                ) {
+                    icono = "💼";
+                }
+
+                if (
+                    r.tipo ===
+                    "EMPLEO_MODIFICADO"
+                ) {
+                    icono = "👔";
+                }
+
+                if (
+                    r.tipo ===
+                    "AHORRO_DEPOSITADO"
+                ) {
+                    icono = "🏦";
+                }
+
+                if (
+                    r.tipo ===
+                    "AHORRO_RETIRADO"
+                ) {
+                    icono = "💰";
+                }
+
+                if (
+                    r.tipo ===
+                    "USUARIO_ELIMINADO" ||
+                    r.tipo ===
+                    "USUARIO_SIN_NOMBRE_ELIMINADO"
+                ) {
+                    icono = "🗑️";
+                }
+
+                if (
+                    r.tipo ===
+                    "CREACION_USUARIO"
+                ) {
+                    icono = "👤";
+                }
+
+                contenedor.innerHTML +=
+                    "<div class='movimiento'>" +
+                    icono +
+                    " <strong>" +
+                    escaparHTML(
+                        r.tipo
+                    ) +
+                    "</strong>" +
+                    "<br>" +
+                    "Usuario: " +
+                    escaparHTML(
+                        r.usuario ||
+                        "-"
+                    ) +
+                    "<br>" +
+                    escaparHTML(
+                        r.detalle ||
+                        ""
+                    ) +
+                    "<small>" +
+                    r.fecha +
+                    "</small>" +
+                    "</div>";
             }
-
-            if (
-                r.tipo ===
-                "DINERO_QUITADO"
-            ) {
-                icono = "➖";
-            }
-
-            if (
-                r.tipo ===
-                "USUARIO_ELIMINADO" ||
-                r.tipo ===
-                "USUARIO_SIN_NOMBRE_ELIMINADO"
-            ) {
-                icono = "🗑️";
-            }
-
-            if (
-                r.tipo ===
-                "CREACION_USUARIO"
-            ) {
-                icono = "👤";
-            }
-
-            contenedor.innerHTML +=
-                "<div class='movimiento'>" +
-                icono +
-                " <strong>" +
-                escaparHTML(r.tipo) +
-                "</strong>" +
-                "<br>" +
-                "Usuario: " +
-                escaparHTML(
-                    r.usuario || "-"
-                ) +
-                "<br>" +
-                escaparHTML(
-                    r.detalle || ""
-                ) +
-                "<small>" +
-                r.fecha +
-                "</small>" +
-                "</div>";
-        });
+        );
 
     } catch (error) {
 
         console.error(error);
+    }
+}
+
+
+// =========================
+// ADMIN — EMPLEOS
+// =========================
+
+async function actualizarEmpleosAdmin() {
+
+    const contenedor =
+        document.getElementById(
+            "adminEmpleos"
+        );
+
+    if (
+        !contenedor ||
+        !adminToken
+    ) {
+        return;
+    }
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/admin/empleos",
+                {
+                    headers: {
+                        "x-admin-token":
+                            adminToken
+                    }
+                }
+            );
+
+        if (!respuesta.ok) {
+            return;
+        }
+
+        const usuariosEmpleo =
+            await respuesta.json();
+
+        contenedor.innerHTML = "";
+
+        usuariosEmpleo.forEach(
+            function(u) {
+
+                contenedor.innerHTML +=
+                    "<div class='job-row'>" +
+
+                    "<strong>" +
+                    escaparHTML(
+                        u.nombre
+                    ) +
+                    "</strong>" +
+
+                    "<span>" +
+                    escaparHTML(
+                        u.trabajo
+                    ) +
+                    " — ₲" +
+                    u.sueldo +
+                    "</span>" +
+
+                    "</div>";
+            }
+        );
+
+    } catch (error) {
+
+        console.error(error);
+    }
+}
+
+
+async function guardarEmpleo() {
+
+    const nombre =
+        document
+            .getElementById(
+                "jobUser"
+            )
+            .value
+            .trim();
+
+    const trabajo =
+        document
+            .getElementById(
+                "jobName"
+            )
+            .value
+            .trim();
+
+    const sueldo =
+        Number(
+            document
+                .getElementById(
+                    "jobSalary"
+                )
+                .value
+        );
+
+    if (!nombre) {
+
+        alert(
+            "Escribí el usuario."
+        );
+
+        return;
+    }
+
+    if (
+        sueldo < 0 ||
+        Number.isNaN(sueldo)
+    ) {
+
+        alert(
+            "El sueldo no puede ser negativo."
+        );
+
+        return;
+    }
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/admin/empleo",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "x-admin-token":
+                            adminToken
+                    },
+
+                    body: JSON.stringify({
+                        nombre,
+                        trabajo,
+                        sueldo
+                    })
+                }
+            );
+
+        const datos =
+            await respuesta.json();
+
+        if (!respuesta.ok) {
+
+            alert(datos.error);
+
+            return;
+        }
+
+        actualizarEmpleosAdmin();
+        actualizarAuditoria();
+
+        document
+            .getElementById(
+                "jobUser"
+            )
+            .value = "";
+
+        document
+            .getElementById(
+                "jobName"
+            )
+            .value = "";
+
+        document
+            .getElementById(
+                "jobSalary"
+            )
+            .value = "";
+
+        alert(
+            "Empleo actualizado 👔"
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "No se pudo actualizar el empleo."
+        );
     }
 }
 
@@ -796,18 +1897,25 @@ async function agregarDinero() {
 
     const nombre =
         document
-            .getElementById("adminUser")
+            .getElementById(
+                "adminUser"
+            )
             .value
             .trim();
 
     const cantidad =
         Number(
             document
-                .getElementById("adminAmount")
+                .getElementById(
+                    "adminAmount"
+                )
                 .value
         );
 
-    if (!nombre || !cantidad) {
+    if (
+        !nombre ||
+        !cantidad
+    ) {
 
         alert(
             "Completá el usuario y la cantidad 😭"
@@ -893,18 +2001,25 @@ async function quitarDinero() {
 
     const nombre =
         document
-            .getElementById("adminUser")
+            .getElementById(
+                "adminUser"
+            )
             .value
             .trim();
 
     const cantidad =
         Number(
             document
-                .getElementById("adminAmount")
+                .getElementById(
+                    "adminAmount"
+                )
                 .value
         );
 
-    if (!nombre || !cantidad) {
+    if (
+        !nombre ||
+        !cantidad
+    ) {
 
         alert(
             "Completá el usuario y la cantidad 😭"
@@ -990,7 +2105,9 @@ async function eliminarUsuario() {
 
     const nombre =
         document
-            .getElementById("deleteUser")
+            .getElementById(
+                "deleteUser"
+            )
             .value
             .trim();
 
@@ -1028,7 +2145,9 @@ async function eliminarUsuario() {
         const respuesta =
             await fetch(
                 "/api/admin/usuarios/" +
-                encodeURIComponent(nombre),
+                encodeURIComponent(
+                    nombre
+                ),
                 {
                     method: "DELETE",
 
@@ -1056,7 +2175,9 @@ async function eliminarUsuario() {
         actualizarAuditoria();
 
         document
-            .getElementById("deleteUser")
+            .getElementById(
+                "deleteUser"
+            )
             .value = "";
 
         alert(
@@ -1076,7 +2197,7 @@ async function eliminarUsuario() {
 
 
 // =========================
-// ELIMINAR CUENTAS SIN NOMBRE
+// ELIMINAR SIN NOMBRE
 // =========================
 
 async function eliminarUsuariosSinNombre() {
@@ -1155,11 +2276,15 @@ async function eliminarUsuariosSinNombre() {
 function limpiarAdminInputs() {
 
     document
-        .getElementById("adminUser")
+        .getElementById(
+            "adminUser"
+        )
         .value = "";
 
     document
-        .getElementById("adminAmount")
+        .getElementById(
+            "adminAmount"
+        )
         .value = "";
 }
 
@@ -1169,6 +2294,16 @@ function limpiarAdminInputs() {
 // =========================
 
 async function cerrarSesion() {
+
+    if (intervaloCliente) {
+
+        clearInterval(
+            intervaloCliente
+        );
+
+        intervaloCliente =
+            null;
+    }
 
     if (adminToken) {
 
@@ -1203,39 +2338,53 @@ async function cerrarSesion() {
     );
 
     document
-        .getElementById("admin")
+        .getElementById(
+            "admin"
+        )
         .style.display = "none";
 
     document
-        .getElementById("bank")
+        .getElementById(
+            "bank"
+        )
         .style.display = "none";
 
     document
-        .getElementById("login")
+        .getElementById(
+            "login"
+        )
         .style.display = "block";
 
     document
-        .getElementById("nameInput")
+        .getElementById(
+            "nameInput"
+        )
         .value = "";
 
     document
-        .getElementById("adminPassword")
+        .getElementById(
+            "adminPassword"
+        )
         .value = "";
 
     document
-        .getElementById("adminPassword")
+        .getElementById(
+            "adminPassword"
+        )
         .style.display = "none";
 }
 
 
 // =========================
-// ESCAPAR TEXTO
+// ESCAPAR HTML
 // =========================
 
 function escaparHTML(texto) {
 
     const div =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
     div.textContent =
         String(texto);
@@ -1249,7 +2398,9 @@ function escaparHTML(texto) {
 // =========================
 
 document
-    .getElementById("nameInput")
+    .getElementById(
+        "nameInput"
+    )
     .addEventListener(
         "input",
         function() {
@@ -1272,7 +2423,8 @@ document
                 password.style.display =
                     "none";
 
-                password.value = "";
+                password.value =
+                    "";
             }
         }
     );
@@ -1282,67 +2434,70 @@ document
 // INICIO
 // =========================
 
-cargarUsuarios().then(async function() {
+cargarUsuarios()
+    .then(
+        async function() {
 
-    const usuarioActual =
-        localStorage.getItem(
-            "usuarioActual"
-        );
-
-    if (
-        usuarioActual ===
-        "AdminGrafonia"
-    ) {
-
-        if (!adminToken) {
-
-            localStorage.removeItem(
-                "usuarioActual"
-            );
-
-            return;
-        }
-
-        try {
-
-            const respuesta =
-                await fetch(
-                    "/api/admin/estadisticas",
-                    {
-                        headers: {
-                            "x-admin-token":
-                                adminToken
-                        }
-                    }
-                );
-
-            if (respuesta.ok) {
-
-                mostrarAdmin();
-
-            } else {
-
-                localStorage.removeItem(
+            const usuarioActual =
+                localStorage.getItem(
                     "usuarioActual"
                 );
 
-                localStorage.removeItem(
-                    "adminToken"
-                );
+            if (
+                usuarioActual ===
+                "AdminGrafonia"
+            ) {
 
-                adminToken = null;
+                if (!adminToken) {
+
+                    localStorage.removeItem(
+                        "usuarioActual"
+                    );
+
+                    return;
+                }
+
+                try {
+
+                    const respuesta =
+                        await fetch(
+                            "/api/admin/estadisticas",
+                            {
+                                headers: {
+                                    "x-admin-token":
+                                        adminToken
+                                }
+                            }
+                        );
+
+                    if (respuesta.ok) {
+
+                        mostrarAdmin();
+
+                    } else {
+
+                        localStorage.removeItem(
+                            "usuarioActual"
+                        );
+
+                        localStorage.removeItem(
+                            "adminToken"
+                        );
+
+                        adminToken = null;
+                    }
+
+                } catch (error) {
+
+                    console.error(error);
+                }
+
+            } else if (
+                usuarioActual &&
+                usuarioActual in usuarios
+            ) {
+
+                mostrarBanco();
             }
-
-        } catch (error) {
-
-            console.error(error);
         }
-
-    } else if (
-        usuarioActual &&
-        usuarioActual in usuarios
-    ) {
-
-        mostrarBanco();
-    }
-});
+    );
