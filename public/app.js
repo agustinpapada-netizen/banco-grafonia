@@ -1,6 +1,9 @@
 let usuarios = {};
-let adminToken = localStorage.getItem("adminToken");
+let adminToken =
+    localStorage.getItem("adminToken");
+
 let intervaloCliente = null;
+let intervaloTinCoin = null;
 
 
 // =========================
@@ -108,7 +111,9 @@ async function entrar() {
 
             if (!respuesta.ok) {
 
-                alert(datos.error);
+                alert(
+                    datos.error
+                );
 
                 return;
             }
@@ -144,7 +149,6 @@ async function entrar() {
         }
     }
 
-
     // =========================
     // USUARIO NORMAL
     // =========================
@@ -173,7 +177,9 @@ async function entrar() {
 
         if (!respuesta.ok) {
 
-            alert(datos.error);
+            alert(
+                datos.error
+            );
 
             return;
         }
@@ -229,13 +235,29 @@ function mostrarBanco() {
     actualizarCliente();
 
     if (intervaloCliente) {
-        clearInterval(intervaloCliente);
+
+        clearInterval(
+            intervaloCliente
+        );
     }
 
     intervaloCliente =
         setInterval(
             actualizarCliente,
             30000
+        );
+
+    if (intervaloTinCoin) {
+
+        clearInterval(
+            intervaloTinCoin
+        );
+    }
+
+    intervaloTinCoin =
+        setInterval(
+            actualizarTinCoin,
+            1000
         );
 }
 
@@ -255,6 +277,7 @@ async function actualizarCliente() {
     actualizarNotificaciones();
     actualizarSolicitudes();
     actualizarEconomia();
+    actualizarTinCoin();
 }
 
 
@@ -306,7 +329,9 @@ function actualizarRanking() {
                     b[1] - a[1]
             );
 
-    if (lista.length === 0) {
+    if (
+        lista.length === 0
+    ) {
 
         ranking.innerHTML =
             "<p>No hay usuarios todavía.</p>";
@@ -322,7 +347,9 @@ function actualizarRanking() {
                 "<strong>#" +
                 (index + 1) +
                 "</strong> " +
-                escaparHTML(usuario[0]) +
+                escaparHTML(
+                    usuario[0]
+                ) +
                 " — ₲" +
                 usuario[1] +
                 "</p>";
@@ -347,7 +374,9 @@ async function actualizarPerfil() {
         const respuesta =
             await fetch(
                 "/api/perfil?usuario=" +
-                encodeURIComponent(nombre)
+                encodeURIComponent(
+                    nombre
+                )
             );
 
         if (!respuesta.ok) {
@@ -364,39 +393,64 @@ async function actualizarPerfil() {
             datos.resumen;
 
         document
-            .getElementById("profileName")
+            .getElementById(
+                "profileName"
+            )
             .textContent =
             cuenta.nombre;
 
         document
-            .getElementById("profileJob")
+            .getElementById(
+                "profileJob"
+            )
             .textContent =
             cuenta.trabajo;
 
         document
-            .getElementById("profileSalary")
-            .textContent =
-            "₲" + cuenta.sueldo;
-
-        document
-            .getElementById("profileSavings")
-            .textContent =
-            "₲" + cuenta.ahorro;
-
-        document
-            .getElementById("sentMonth")
+            .getElementById(
+                "profileSalary"
+            )
             .textContent =
             "₲" +
-            resumen.dineroenviado;
+            cuenta.sueldo;
 
-        document.getElementById("receivedMonth").textContent =
-    "₲" + resumen.dineroRecibido;
+        document
+            .getElementById(
+                "profileSavings"
+            )
+            .textContent =
+            "₲" +
+            cuenta.ahorro;
 
-document.getElementById("sentOperations").textContent =
-    resumen.enviados;
+        document
+            .getElementById(
+                "sentMonth"
+            )
+            .textContent =
+            "₲" +
+            resumen.dineroEnviado;
 
-document.getElementById("receivedOperations").textContent =
-    resumen.recibidos;
+        document
+            .getElementById(
+                "receivedMonth"
+            )
+            .textContent =
+            "₲" +
+            resumen.dineroRecibido;
+
+        document
+            .getElementById(
+                "sentOperations"
+            )
+            .textContent =
+            resumen.enviados;
+
+        document
+            .getElementById(
+                "receivedOperations"
+            )
+            .textContent =
+            resumen.recibidos;
 
     } catch (error) {
 
@@ -435,7 +489,9 @@ async function actualizarNotificaciones() {
         const respuesta =
             await fetch(
                 "/api/notificaciones?usuario=" +
-                encodeURIComponent(usuario)
+                encodeURIComponent(
+                    usuario
+                )
             );
 
         const notificaciones =
@@ -709,7 +765,9 @@ async function transferir() {
         return;
     }
 
-    if (cantidad <= 0) {
+    if (
+        cantidad <= 0
+    ) {
 
         alert(
             "La cantidad debe ser mayor que 0."
@@ -770,7 +828,9 @@ async function transferir() {
 
         if (!respuesta.ok) {
 
-            alert(datos.error);
+            alert(
+                datos.error
+            );
 
             return;
         }
@@ -779,15 +839,21 @@ async function transferir() {
             datos.usuarios;
 
         document
-            .getElementById("receiver")
+            .getElementById(
+                "receiver"
+            )
             .value = "";
 
         document
-            .getElementById("amount")
+            .getElementById(
+                "amount"
+            )
             .value = "";
 
         document
-            .getElementById("concept")
+            .getElementById(
+                "concept"
+            )
             .value = "";
 
         actualizarCliente();
@@ -815,7 +881,9 @@ async function transferir() {
 // AHORRO
 // =========================
 
-async function moverAhorro(tipo) {
+async function moverAhorro(
+    tipo
+) {
 
     const usuario =
         localStorage.getItem(
@@ -873,7 +941,9 @@ async function moverAhorro(tipo) {
 
         if (!respuesta.ok) {
 
-            alert(datos.error);
+            alert(
+                datos.error
+            );
 
             return;
         }
@@ -1125,7 +1195,9 @@ async function solicitarDinero() {
         return;
     }
 
-    if (cantidad <= 0) {
+    if (
+        cantidad <= 0
+    ) {
 
         alert(
             "La cantidad debe ser mayor que 0."
@@ -1161,7 +1233,9 @@ async function solicitarDinero() {
 
         if (!respuesta.ok) {
 
-            alert(datos.error);
+            alert(
+                datos.error
+            );
 
             return;
         }
@@ -1201,7 +1275,9 @@ async function solicitarDinero() {
 }
 
 
-async function aceptarSolicitud(id) {
+async function aceptarSolicitud(
+    id
+) {
 
     const usuario =
         localStorage.getItem(
@@ -1234,7 +1310,9 @@ async function aceptarSolicitud(id) {
 
         if (!respuesta.ok) {
 
-            alert(datos.error);
+            alert(
+                datos.error
+            );
 
             return;
         }
@@ -1256,7 +1334,9 @@ async function aceptarSolicitud(id) {
 }
 
 
-async function rechazarSolicitud(id) {
+async function rechazarSolicitud(
+    id
+) {
 
     const usuario =
         localStorage.getItem(
@@ -1289,7 +1369,9 @@ async function rechazarSolicitud(id) {
 
         if (!respuesta.ok) {
 
-            alert(datos.error);
+            alert(
+                datos.error
+            );
 
             return;
         }
@@ -1311,6 +1393,822 @@ async function rechazarSolicitud(id) {
 }
 
 
+// ======================================================
+// TINCOINS — USUARIO
+// ======================================================
+
+let ultimoHistorialTinCoin = [];
+
+
+async function actualizarTinCoin() {
+
+    const usuario =
+        localStorage.getItem(
+            "usuarioActual"
+        );
+
+    if (
+        !usuario ||
+        usuario ===
+        "AdminGrafonia"
+    ) {
+        return;
+    }
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/tincoins?usuario=" +
+                encodeURIComponent(
+                    usuario
+                )
+            );
+
+        if (!respuesta.ok) {
+            return;
+        }
+
+        const datos =
+            await respuesta.json();
+
+        const precio =
+            Number(
+                datos.precio
+            );
+
+        const porcentaje =
+            Number(
+                datos.porcentaje
+            );
+
+        const precioElemento =
+            document.getElementById(
+                "tincoinPrice"
+            );
+
+        const porcentajeElemento =
+            document.getElementById(
+                "tincoinPercent"
+            );
+
+        const cantidadElemento =
+            document.getElementById(
+                "tincoinAmount"
+            );
+
+        const valorElemento =
+            document.getElementById(
+                "tincoinValue"
+            );
+
+        const capitalElemento =
+            document.getElementById(
+                "tincoinCapital"
+            );
+
+        const gananciaElemento =
+            document.getElementById(
+                "tincoinProfit"
+            );
+
+        const proximaElemento =
+            document.getElementById(
+                "tincoinNext"
+            );
+
+        if (precioElemento) {
+
+            precioElemento.textContent =
+                "₲" +
+                precio.toFixed(4);
+        }
+
+        if (porcentajeElemento) {
+
+            porcentajeElemento.textContent =
+                (
+                    porcentaje >= 0
+                        ? "+"
+                        : ""
+                ) +
+                porcentaje.toFixed(2) +
+                "%";
+
+            porcentajeElemento.className =
+                porcentaje >= 0
+                    ? "tincoin-up"
+                    : "tincoin-down";
+        }
+
+        if (cantidadElemento) {
+
+            cantidadElemento.textContent =
+                Number(
+                    datos.posicion.tincoins
+                ).toFixed(8);
+        }
+
+        if (valorElemento) {
+
+            valorElemento.textContent =
+                "₲" +
+                Number(
+                    datos.posicion.valor
+                ).toFixed(2);
+        }
+
+        if (capitalElemento) {
+
+            capitalElemento.textContent =
+                "₲" +
+                Number(
+                    datos.posicion.capital
+                ).toFixed(2);
+        }
+
+        if (gananciaElemento) {
+
+            const ganancia =
+                Number(
+                    datos.posicion.ganancia
+                );
+
+            gananciaElemento.textContent =
+                (
+                    ganancia >= 0
+                        ? "+"
+                        : ""
+                ) +
+                "₲" +
+                ganancia.toFixed(2);
+
+            gananciaElemento.className =
+                ganancia >= 0
+                    ? "tincoin-up"
+                    : "tincoin-down";
+        }
+
+        if (proximaElemento) {
+
+            actualizarContadorTinCoin(
+                datos.proximaActualizacion
+            );
+        }
+
+        ultimoHistorialTinCoin =
+            datos.historial || [];
+
+        dibujarGraficoTinCoin(
+            ultimoHistorialTinCoin
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Error TinCoin:",
+            error
+        );
+    }
+}
+
+
+// =========================
+// CONTADOR
+// =========================
+
+function actualizarContadorTinCoin(
+    fecha
+) {
+
+    const elemento =
+        document.getElementById(
+            "tincoinNext"
+        );
+
+    if (!elemento) {
+        return;
+    }
+
+    if (!fecha) {
+
+        elemento.textContent =
+            "Calculando...";
+
+        return;
+    }
+
+    const diferencia =
+        new Date(fecha).getTime() -
+        Date.now();
+
+    if (
+        diferencia <= 0
+    ) {
+
+        elemento.textContent =
+            "Actualizando...";
+
+        return;
+    }
+
+    const horas =
+        Math.floor(
+            diferencia /
+            3600000
+        );
+
+    const minutos =
+        Math.floor(
+            (
+                diferencia %
+                3600000
+            ) /
+            60000
+        );
+
+    const segundos =
+        Math.floor(
+            (
+                diferencia %
+                60000
+            ) /
+            1000
+        );
+
+    elemento.textContent =
+        horas + "h " +
+        String(
+            minutos
+        ).padStart(2, "0") +
+        "m " +
+        String(
+            segundos
+        ).padStart(2, "0") +
+        "s";
+}
+
+
+// =========================
+// GRÁFICO
+// =========================
+
+function dibujarGraficoTinCoin(
+    historial
+) {
+
+    const canvas =
+        document.getElementById(
+            "tincoinChart"
+        );
+
+    if (
+        !canvas ||
+        !historial ||
+        historial.length === 0
+    ) {
+        return;
+    }
+
+    const ctx =
+        canvas.getContext(
+            "2d"
+        );
+
+    const ancho =
+        canvas.width =
+            canvas.clientWidth *
+            window.devicePixelRatio;
+
+    const alto =
+        canvas.height =
+            280 *
+            window.devicePixelRatio;
+
+    ctx.clearRect(
+        0,
+        0,
+        ancho,
+        alto
+    );
+
+    const padding =
+        35 *
+        window.devicePixelRatio;
+
+    const precios =
+        historial.map(
+            function(h) {
+                return Number(
+                    h.precio
+                );
+            }
+        );
+
+    const minimo =
+        Math.min(
+            ...precios
+        );
+
+    const maximo =
+        Math.max(
+            ...precios
+        );
+
+    const rango =
+        maximo === minimo
+            ? 1
+            : maximo - minimo;
+
+    const anchoGrafico =
+        ancho -
+        padding * 2;
+
+    const altoGrafico =
+        alto -
+        padding * 2;
+
+    // Fondo de gráfico
+    ctx.fillStyle =
+        "rgba(0,0,0,0.12)";
+
+    ctx.fillRect(
+        0,
+        0,
+        ancho,
+        alto
+    );
+
+    // Líneas
+    ctx.strokeStyle =
+        "rgba(255,255,255,0.08)";
+
+    ctx.lineWidth =
+        1 *
+        window.devicePixelRatio;
+
+    for (
+        let i = 0;
+        i < 5;
+        i++
+    ) {
+
+        const y =
+            padding +
+            (
+                altoGrafico *
+                i /
+                4
+            );
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            padding,
+            y
+        );
+
+        ctx.lineTo(
+            ancho - padding,
+            y
+        );
+
+        ctx.stroke();
+    }
+
+    // Línea principal
+    ctx.beginPath();
+
+    precios.forEach(
+        function(precio, index) {
+
+            const x =
+                precios.length === 1
+                    ? ancho / 2
+                    : padding +
+                      (
+                        anchoGrafico *
+                        index /
+                        (
+                            precios.length -
+                            1
+                        )
+                      );
+
+            const y =
+                padding +
+                altoGrafico -
+                (
+                    (
+                        precio -
+                        minimo
+                    ) /
+                    rango
+                ) *
+                altoGrafico;
+
+            if (index === 0) {
+
+                ctx.moveTo(
+                    x,
+                    y
+                );
+
+            } else {
+
+                ctx.lineTo(
+                    x,
+                    y
+                );
+            }
+        }
+    );
+
+    ctx.strokeStyle =
+        "#24d17e";
+
+    ctx.lineWidth =
+        3 *
+        window.devicePixelRatio;
+
+    ctx.stroke();
+
+    // Puntos
+    precios.forEach(
+        function(precio, index) {
+
+            const x =
+                precios.length === 1
+                    ? ancho / 2
+                    : padding +
+                      (
+                        anchoGrafico *
+                        index /
+                        (
+                            precios.length -
+                            1
+                        )
+                      );
+
+            const y =
+                padding +
+                altoGrafico -
+                (
+                    (
+                        precio -
+                        minimo
+                    ) /
+                    rango
+                ) *
+                altoGrafico;
+
+            ctx.beginPath();
+
+            ctx.arc(
+                x,
+                y,
+                4 *
+                window.devicePixelRatio,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fillStyle =
+                "#24d17e";
+
+            ctx.fill();
+        }
+    );
+
+    // Precio mínimo y máximo
+    ctx.fillStyle =
+        "rgba(255,255,255,0.65)";
+
+    ctx.font =
+        (
+            12 *
+            window.devicePixelRatio
+        ) +
+        "px Arial";
+
+    ctx.fillText(
+        "Máx ₲" +
+        maximo.toFixed(4),
+        padding,
+        18 *
+        window.devicePixelRatio
+    );
+
+    ctx.fillText(
+        "Mín ₲" +
+        minimo.toFixed(4),
+        padding,
+        alto -
+        8 *
+        window.devicePixelRatio
+    );
+}
+
+
+// =========================
+// INVERTIR
+// =========================
+
+async function invertirTinCoin() {
+
+    const usuario =
+        localStorage.getItem(
+            "usuarioActual"
+        );
+
+    const cantidad =
+        Number(
+            document
+                .getElementById(
+                    "tincoinInvestment"
+                )
+                .value
+        );
+
+    if (
+        !Number.isInteger(
+            cantidad
+        ) ||
+        cantidad <= 0
+    ) {
+
+        alert(
+            "La cantidad debe ser un número entero mayor que 0."
+        );
+
+        return;
+    }
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/tincoins/invertir",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        usuario,
+                        cantidad
+                    })
+                }
+            );
+
+        const datos =
+            await respuesta.json();
+
+        if (!respuesta.ok) {
+
+            alert(
+                datos.error
+            );
+
+            return;
+        }
+
+        document
+            .getElementById(
+                "tincoinInvestment"
+            )
+            .value = "";
+
+        await actualizarCliente();
+
+        alert(
+            "Invertiste ₲" +
+            cantidad +
+            " en TinCoin 🪙"
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "No se pudo realizar la inversión."
+        );
+    }
+}
+
+
+// =========================
+// RETIRAR
+// =========================
+
+async function retirarTinCoin() {
+
+    const usuario =
+        localStorage.getItem(
+            "usuarioActual"
+        );
+
+    const input =
+        document.getElementById(
+            "tincoinWithdrawal"
+        );
+
+    let cantidad =
+        Number(
+            input.value
+        );
+
+    if (
+        !Number.isFinite(
+            cantidad
+        ) ||
+        cantidad <= 0
+    ) {
+
+        alert(
+            "Escribí una cantidad válida de TinCoins."
+        );
+
+        return;
+    }
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/tincoins/retirar",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        usuario,
+                        cantidad
+                    })
+                }
+            );
+
+        const datos =
+            await respuesta.json();
+
+        if (!respuesta.ok) {
+
+            alert(
+                datos.error
+            );
+
+            return;
+        }
+
+        input.value = "";
+
+        await actualizarCliente();
+
+        alert(
+            "Retiraste tu inversión y recibiste ₲" +
+            Number(
+                datos.dinero
+            ).toFixed(2) +
+            " 💸"
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "No se pudo retirar la inversión."
+        );
+    }
+}
+
+
+// =========================
+// RETIRAR TODO
+// =========================
+
+async function retirarTodoTinCoin() {
+
+    const usuario =
+        localStorage.getItem(
+            "usuarioActual"
+        );
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/tincoins?usuario=" +
+                encodeURIComponent(
+                    usuario
+                )
+            );
+
+        const datos =
+            await respuesta.json();
+
+        const cantidad =
+            Number(
+                datos.posicion.tincoins
+            );
+
+        if (
+            cantidad <= 0
+        ) {
+
+            alert(
+                "No tenés TinCoins para retirar."
+            );
+
+            return;
+        }
+
+        const confirmar =
+            confirm(
+                "¿Querés retirar todos tus TinCoins?\n\n" +
+                "Valor actual: ₲" +
+                Number(
+                    datos.posicion.valor
+                ).toFixed(2)
+            );
+
+        if (!confirmar) {
+            return;
+        }
+
+        const respuestaRetiro =
+            await fetch(
+                "/api/tincoins/retirar",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        usuario,
+                        cantidad
+                    })
+                }
+            );
+
+        const resultado =
+            await respuestaRetiro.json();
+
+        if (
+            !respuestaRetiro.ok
+        ) {
+
+            alert(
+                resultado.error
+            );
+
+            return;
+        }
+
+        await actualizarCliente();
+
+        alert(
+            "Retiraste toda tu inversión 💸\n\n" +
+            "Recibiste ₲" +
+            Number(
+                resultado.dinero
+            ).toFixed(2) +
+            "\nResultado: " +
+            (
+                Number(
+                    resultado.ganancia
+                ) >= 0
+                    ? "+"
+                    : ""
+            ) +
+            "₲" +
+            Number(
+                resultado.ganancia
+            ).toFixed(2)
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "No se pudo retirar la inversión."
+        );
+    }
+}
+
+
 // =========================
 // MOSTRAR ADMIN
 // =========================
@@ -1324,6 +2222,16 @@ function mostrarAdmin() {
         );
 
         intervaloCliente =
+            null;
+    }
+
+    if (intervaloTinCoin) {
+
+        clearInterval(
+            intervaloTinCoin
+        );
+
+        intervaloTinCoin =
             null;
     }
 
@@ -1344,6 +2252,7 @@ function mostrarAdmin() {
     actualizarHistorialAdmin();
     actualizarAuditoria();
     actualizarEmpleosAdmin();
+    actualizarTinCoinAdmin();
 }
 
 
@@ -1371,7 +2280,9 @@ function actualizarUsuariosAdmin() {
                     b[1] - a[1]
             );
 
-    if (lista.length === 0) {
+    if (
+        lista.length === 0
+    ) {
 
         ranking.innerHTML =
             "<p>No hay usuarios todavía.</p>";
@@ -1392,7 +2303,9 @@ function actualizarUsuariosAdmin() {
                 "<strong>#" +
                 (index + 1) +
                 "</strong> " +
-                escaparHTML(nombre) +
+                escaparHTML(
+                    nombre
+                ) +
                 " — ₲" +
                 usuario[1] +
                 "</div>";
@@ -1676,28 +2589,690 @@ async function actualizarAuditoria() {
                     icono = "👤";
                 }
 
+                if (
+                    r.tipo ===
+                    "TINCOIN_CAMBIO_AUTOMATICO"
+                ) {
+                    icono = "🎲";
+                }
+
+                if (
+                    r.tipo ===
+                    "TINCOIN_CAMBIO_ADMIN"
+                ) {
+                    icono = "🛠️";
+                }
+
+                if (
+                    r.tipo ===
+                    "TINCOIN_INVERSION"
+                ) {
+                    icono = "🪙";
+                }
+
+                if (
+                    r.tipo ===
+                    "TINCOIN_RETIRO"
+                ) {
+                    icono = "💸";
+                }
+
                 contenedor.innerHTML +=
                     "<div class='movimiento'>" +
+
                     icono +
                     " <strong>" +
                     escaparHTML(
                         r.tipo
                     ) +
                     "</strong>" +
+
                     "<br>" +
+
                     "Usuario: " +
                     escaparHTML(
                         r.usuario ||
                         "-"
                     ) +
+
                     "<br>" +
+
+                    "Actor: " +
+                    escaparHTML(
+                        r.actor ||
+                        "-"
+                    ) +
+
+                    "<br>" +
+
                     escaparHTML(
                         r.detalle ||
                         ""
                     ) +
+
                     "<small>" +
                     r.fecha +
                     "</small>" +
+
+                    "</div>";
+            }
+        );
+
+    } catch (error) {
+
+        console.error(error);
+    }
+}
+
+
+// ======================================================
+// TINCOINS — ADMIN
+// ======================================================
+
+async function actualizarTinCoinAdmin() {
+
+    if (!adminToken) {
+        return;
+    }
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/admin/tincoins",
+                {
+                    headers: {
+                        "x-admin-token":
+                            adminToken
+                    }
+                }
+            );
+
+        if (!respuesta.ok) {
+            return;
+        }
+
+        const datos =
+            await respuesta.json();
+
+        const precio =
+            document.getElementById(
+                "adminTincoinPrice"
+            );
+
+        const inversores =
+            document.getElementById(
+                "adminTincoinInvestors"
+            );
+
+        const capital =
+            document.getElementById(
+                "adminTincoinCapital"
+            );
+
+        const valor =
+            document.getElementById(
+                "adminTincoinValue"
+            );
+
+        const ganancia =
+            document.getElementById(
+                "adminTincoinProfit"
+            );
+
+        if (precio) {
+
+            precio.textContent =
+                "₲" +
+                Number(
+                    datos.precio
+                ).toFixed(4);
+        }
+
+        if (inversores) {
+
+            inversores.textContent =
+                datos.inversores;
+        }
+
+        if (capital) {
+
+            capital.textContent =
+                "₲" +
+                Number(
+                    datos.capital
+                ).toFixed(2);
+        }
+
+        if (valor) {
+
+            valor.textContent =
+                "₲" +
+                Number(
+                    datos.valorActual
+                ).toFixed(2);
+        }
+
+        if (ganancia) {
+
+            const numero =
+                Number(
+                    datos.gananciaGlobal
+                );
+
+            ganancia.textContent =
+                (
+                    numero >= 0
+                        ? "+"
+                        : ""
+                ) +
+                "₲" +
+                numero.toFixed(2);
+
+            ganancia.className =
+                numero >= 0
+                    ? "tincoin-up"
+                    : "tincoin-down";
+        }
+
+        actualizarContadorTinCoinAdmin(
+            datos.proximaActualizacion
+        );
+
+        await actualizarHistorialTinCoinAdmin();
+        await actualizarOperacionesTinCoinAdmin();
+
+    } catch (error) {
+
+        console.error(error);
+    }
+}
+
+
+function actualizarContadorTinCoinAdmin(
+    fecha
+) {
+
+    const elemento =
+        document.getElementById(
+            "adminTincoinNext"
+        );
+
+    if (!elemento) {
+        return;
+    }
+
+    const diferencia =
+        new Date(fecha).getTime() -
+        Date.now();
+
+    if (
+        diferencia <= 0
+    ) {
+
+        elemento.textContent =
+            "Actualizando...";
+
+        return;
+    }
+
+    const horas =
+        Math.floor(
+            diferencia /
+            3600000
+        );
+
+    const minutos =
+        Math.floor(
+            (
+                diferencia %
+                3600000
+            ) /
+            60000
+        );
+
+    const segundos =
+        Math.floor(
+            (
+                diferencia %
+                60000
+            ) /
+            1000
+        );
+
+    elemento.textContent =
+        horas + "h " +
+        String(
+            minutos
+        ).padStart(2, "0") +
+        "m " +
+        String(
+            segundos
+        ).padStart(2, "0") +
+        "s";
+}
+
+
+async function cambiarPrecioTinCoin() {
+
+    const input =
+        document.getElementById(
+            "adminTincoinNewPrice"
+        );
+
+    const precio =
+        Number(
+            input.value
+        );
+
+    if (
+        !Number.isFinite(precio) ||
+        precio <= 0
+    ) {
+
+        alert(
+            "Escribí un precio válido."
+        );
+
+        return;
+    }
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/admin/tincoins/precio",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "x-admin-token":
+                            adminToken
+                    },
+
+                    body: JSON.stringify({
+                        precio
+                    })
+                }
+            );
+
+        const datos =
+            await respuesta.json();
+
+        if (!respuesta.ok) {
+
+            alert(
+                datos.error
+            );
+
+            return;
+        }
+
+        input.value = "";
+
+        await actualizarTinCoinAdmin();
+
+        alert(
+            "Precio TinCoin cambiado a ₲" +
+            Number(
+                datos.precio
+            ).toFixed(4) +
+            " 🪙"
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "No se pudo cambiar el precio."
+        );
+    }
+}
+
+
+async function cambiarPorcentajeTinCoin(
+    porcentaje
+) {
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/admin/tincoins/porcentaje",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "x-admin-token":
+                            adminToken
+                    },
+
+                    body: JSON.stringify({
+                        porcentaje
+                    })
+                }
+            );
+
+        const datos =
+            await respuesta.json();
+
+        if (!respuesta.ok) {
+
+            alert(
+                datos.error
+            );
+
+            return;
+        }
+
+        await actualizarTinCoinAdmin();
+
+        alert(
+            "TinCoin cambió " +
+            (
+                Number(
+                    datos.porcentaje
+                ) >= 0
+                    ? "+"
+                    : ""
+            ) +
+            Number(
+                datos.porcentaje
+            ).toFixed(2) +
+            "% 🪙"
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "No se pudo modificar TinCoin."
+        );
+    }
+}
+
+
+async function aplicarPorcentajeTinCoin() {
+
+    const input =
+        document.getElementById(
+            "adminTincoinPercent"
+        );
+
+    const porcentaje =
+        Number(
+            input.value
+        );
+
+    if (
+        !Number.isFinite(
+            porcentaje
+        ) ||
+        porcentaje === 0
+    ) {
+
+        alert(
+            "Escribí un porcentaje distinto de 0."
+        );
+
+        return;
+    }
+
+    await cambiarPorcentajeTinCoin(
+        porcentaje
+    );
+
+    input.value = "";
+}
+
+
+async function actualizarHistorialTinCoinAdmin() {
+
+    const contenedor =
+        document.getElementById(
+            "adminTincoinHistory"
+        );
+
+    if (
+        !contenedor ||
+        !adminToken
+    ) {
+        return;
+    }
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/admin/tincoins/historial",
+                {
+                    headers: {
+                        "x-admin-token":
+                            adminToken
+                    }
+                }
+            );
+
+        if (!respuesta.ok) {
+            return;
+        }
+
+        const registros =
+            await respuesta.json();
+
+        contenedor.innerHTML = "";
+
+        if (
+            registros.length === 0
+        ) {
+
+            contenedor.innerHTML =
+                "<p>No hay cambios todavía.</p>";
+
+            return;
+        }
+
+        registros.forEach(
+            function(r) {
+
+                const porcentaje =
+                    Number(
+                        r.porcentaje
+                    );
+
+                contenedor.innerHTML +=
+                    "<div class='movimiento'>" +
+
+                    (
+                        r.tipo ===
+                        "AUTOMATICO"
+                            ? "🎲"
+                            : r.tipo ===
+                              "ADMIN"
+                                ? "🛠️"
+                                : "🪙"
+                    ) +
+
+                    " <strong>₲" +
+                    Number(
+                        r.precio
+                    ).toFixed(4) +
+                    "</strong>" +
+
+                    " — " +
+
+                    "<span class='" +
+                    (
+                        porcentaje >= 0
+                            ? "tincoin-up"
+                            : "tincoin-down"
+                    ) +
+                    "'>" +
+
+                    (
+                        porcentaje >= 0
+                            ? "+"
+                            : ""
+                    ) +
+
+                    porcentaje.toFixed(2) +
+                    "%</span>" +
+
+                    "<br>Tipo: " +
+                    escaparHTML(
+                        r.tipo
+                    ) +
+
+                    "<br>Actor: " +
+                    escaparHTML(
+                        r.actor ||
+                        "-"
+                    ) +
+
+                    "<small>" +
+                    r.fecha +
+                    "</small>" +
+
+                    "</div>";
+            }
+        );
+
+    } catch (error) {
+
+        console.error(error);
+    }
+}
+
+
+async function actualizarOperacionesTinCoinAdmin() {
+
+    const contenedor =
+        document.getElementById(
+            "adminTincoinOperations"
+        );
+
+    if (
+        !contenedor ||
+        !adminToken
+    ) {
+        return;
+    }
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/admin/tincoins/operaciones",
+                {
+                    headers: {
+                        "x-admin-token":
+                            adminToken
+                    }
+                }
+            );
+
+        if (!respuesta.ok) {
+            return;
+        }
+
+        const operaciones =
+            await respuesta.json();
+
+        contenedor.innerHTML = "";
+
+        if (
+            operaciones.length === 0
+        ) {
+
+            contenedor.innerHTML =
+                "<p>No hay operaciones todavía.</p>";
+
+            return;
+        }
+
+        operaciones.forEach(
+            function(o) {
+
+                const ganancia =
+                    Number(
+                        o.ganancia || 0
+                    );
+
+                contenedor.innerHTML +=
+                    "<div class='movimiento'>" +
+
+                    (
+                        o.tipo ===
+                        "INVERSION"
+                            ? "📥"
+                            : "📤"
+                    ) +
+
+                    " <strong>" +
+                    escaparHTML(
+                        o.usuario
+                    ) +
+                    "</strong>" +
+
+                    " — " +
+                    escaparHTML(
+                        o.tipo
+                    ) +
+
+                    "<br>" +
+
+                    "Dinero: ₲" +
+                    Number(
+                        o.dinero
+                    ).toFixed(2) +
+
+                    "<br>" +
+
+                    "TinCoins: " +
+                    Number(
+                        o.tincoins
+                    ).toFixed(8) +
+
+                    "<br>" +
+
+                    "Precio: ₲" +
+                    Number(
+                        o.precio
+                    ).toFixed(4) +
+
+                    (
+                        o.tipo ===
+                        "RETIRO"
+                            ? "<br>Resultado: <span class='" +
+                              (
+                                  ganancia >= 0
+                                      ? "tincoin-up"
+                                      : "tincoin-down"
+                              ) +
+                              "'>" +
+                              (
+                                  ganancia >= 0
+                                      ? "+"
+                                      : ""
+                              ) +
+                              "₲" +
+                              ganancia.toFixed(2) +
+                              "</span>"
+                            : ""
+                    ) +
+
+                    "<small>" +
+                    o.fecha +
+                    "</small>" +
+
                     "</div>";
             }
         );
@@ -1857,7 +3432,9 @@ async function guardarEmpleo() {
 
         if (!respuesta.ok) {
 
-            alert(datos.error);
+            alert(
+                datos.error
+            );
 
             return;
         }
@@ -1933,7 +3510,9 @@ async function agregarDinero() {
         return;
     }
 
-    if (cantidad <= 0) {
+    if (
+        cantidad <= 0
+    ) {
 
         alert(
             "La cantidad debe ser mayor que 0."
@@ -1970,7 +3549,9 @@ async function agregarDinero() {
 
         if (!respuesta.ok) {
 
-            alert(datos.error);
+            alert(
+                datos.error
+            );
 
             return;
         }
@@ -2037,7 +3618,9 @@ async function quitarDinero() {
         return;
     }
 
-    if (cantidad <= 0) {
+    if (
+        cantidad <= 0
+    ) {
 
         alert(
             "La cantidad debe ser mayor que 0."
@@ -2074,7 +3657,9 @@ async function quitarDinero() {
 
         if (!respuesta.ok) {
 
-            alert(datos.error);
+            alert(
+                datos.error
+            );
 
             return;
         }
@@ -2129,7 +3714,9 @@ async function eliminarUsuario() {
         return;
     }
 
-    if (!(nombre in usuarios)) {
+    if (
+        !(nombre in usuarios)
+    ) {
 
         alert(
             "Ese usuario no existe."
@@ -2172,7 +3759,9 @@ async function eliminarUsuario() {
 
         if (!respuesta.ok) {
 
-            alert(datos.error);
+            alert(
+                datos.error
+            );
 
             return;
         }
@@ -2211,7 +3800,9 @@ async function eliminarUsuario() {
 
 async function eliminarUsuariosSinNombre() {
 
-    if (!("" in usuarios)) {
+    if (
+        !("" in usuarios)
+    ) {
 
         alert(
             "No hay cuentas sin nombre."
@@ -2249,7 +3840,9 @@ async function eliminarUsuariosSinNombre() {
 
         if (!respuesta.ok) {
 
-            alert(datos.error);
+            alert(
+                datos.error
+            );
 
             return;
         }
@@ -2279,7 +3872,7 @@ async function eliminarUsuariosSinNombre() {
 
 
 // =========================
-// LIMPIAR INPUTS
+// LIMPIAR INPUTS ADMIN
 // =========================
 
 function limpiarAdminInputs() {
@@ -2314,6 +3907,16 @@ async function cerrarSesion() {
             null;
     }
 
+    if (intervaloTinCoin) {
+
+        clearInterval(
+            intervaloTinCoin
+        );
+
+        intervaloTinCoin =
+            null;
+    }
+
     if (adminToken) {
 
         try {
@@ -2335,7 +3938,8 @@ async function cerrarSesion() {
             console.error(error);
         }
 
-        adminToken = null;
+        adminToken =
+            null;
 
         localStorage.removeItem(
             "adminToken"
@@ -2479,7 +4083,9 @@ cargarUsuarios()
                             }
                         );
 
-                    if (respuesta.ok) {
+                    if (
+                        respuesta.ok
+                    ) {
 
                         mostrarAdmin();
 
@@ -2493,7 +4099,8 @@ cargarUsuarios()
                             "adminToken"
                         );
 
-                        adminToken = null;
+                        adminToken =
+                            null;
                     }
 
                 } catch (error) {
