@@ -1,68 +1,107 @@
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(
-        135deg,
-        #101820,
-        #1d3b35
-    );
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    background:
+        linear-gradient(
+            135deg,
+            #101820,
+            #1d3b35
+        );
+
     color: white;
+
     min-height: 100vh;
 }
 
+
 .container {
     width: 90%;
+
     max-width: 700px;
+
     margin: auto;
+
     padding: 40px 0;
+
     text-align: center;
 }
 
+
 h1 {
     font-size: 42px;
+
     margin-bottom: 8px;
 }
+
 
 h2 {
     margin-top: 30px;
 }
 
+
 input {
     display: block;
+
     width: 90%;
+
     max-width: 400px;
+
     margin: 12px auto;
+
     padding: 14px;
+
     border-radius: 10px;
+
     border: none;
+
     font-size: 16px;
+
     box-sizing: border-box;
 }
 
+
 button {
     padding: 13px 25px;
+
     margin: 6px;
+
     border: none;
+
     border-radius: 10px;
+
     background: #24d17e;
+
     color: #06140e;
+
     font-weight: bold;
+
     cursor: pointer;
+
     transition: 0.2s;
 }
 
+
 button:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.1);
+    transform:
+        translateY(-2px);
+
+    filter:
+        brightness(1.1);
 }
 
+
 .balance {
-    background: rgba(
-        255,
-        255,
-        255,
-        0.1
-    );
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.1
+        );
 
     padding: 25px;
 
@@ -71,18 +110,23 @@ button:hover {
     margin: 25px 0;
 }
 
+
 .balance h2 {
     font-size: 32px;
-    margin: 10px 0 0;
+
+    margin:
+        10px 0 0;
 }
 
+
 .card {
-    background: rgba(
-        255,
-        255,
-        255,
-        0.07
-    );
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.07
+        );
 
     padding: 20px;
 
@@ -90,22 +134,26 @@ button:hover {
 
     margin: 25px 0;
 
-    border: 1px solid rgba(
-        255,
-        255,
-        255,
-        0.06
-    );
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.06
+        );
 }
+
 
 #ranking,
 #adminRanking {
-    background: rgba(
-        255,
-        255,
-        255,
-        0.08
-    );
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.08
+        );
 
     padding: 15px;
 
@@ -114,28 +162,32 @@ button:hover {
     margin-bottom: 30px;
 }
 
+
 .admin-user {
     padding: 12px;
 
     margin: 6px 0;
 
-    background: rgba(
-        255,
-        255,
-        255,
-        0.07
-    );
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.07
+        );
 
     border-radius: 10px;
 }
 
+
 .historial {
-    background: rgba(
-        0,
-        0,
-        0,
-        0.2
-    );
+    background:
+        rgba(
+            0,
+            0,
+            0,
+            0.2
+        );
 
     border-radius: 15px;
 
@@ -148,13 +200,15 @@ button:hover {
     text-align: left;
 }
 
+
 .movimiento {
-    background: rgba(
-        255,
-        255,
-        255,
-        0.07
-    );
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.07
+        );
 
     padding: 13px;
 
@@ -165,6 +219,7 @@ button:hover {
     line-height: 1.5;
 }
 
+
 .movimiento small {
     display: block;
 
@@ -172,6 +227,7 @@ button:hover {
 
     margin-top: 4px;
 }
+
 
 .stats {
     display: grid;
@@ -184,18 +240,21 @@ button:hover {
     margin: 20px 0;
 }
 
+
 .stat {
-    background: rgba(
-        255,
-        255,
-        255,
-        0.1
-    );
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.1
+        );
 
     padding: 18px;
 
     border-radius: 15px;
 }
+
 
 .stat span {
     display: block;
@@ -205,9 +264,11 @@ button:hover {
     margin-bottom: 8px;
 }
 
+
 .stat strong {
     font-size: 25px;
 }
+
 
 .profile-grid {
     display: grid;
@@ -218,18 +279,21 @@ button:hover {
     gap: 12px;
 }
 
+
 .profile-grid div {
-    background: rgba(
-        255,
-        255,
-        255,
-        0.07
-    );
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.07
+        );
 
     padding: 15px;
 
     border-radius: 12px;
 }
+
 
 .profile-grid span {
     display: block;
@@ -241,19 +305,22 @@ button:hover {
     margin-bottom: 6px;
 }
 
+
 .profile-grid strong {
     display: block;
 
     font-size: 18px;
 }
 
+
 .notification {
-    background: rgba(
-        255,
-        255,
-        255,
-        0.06
-    );
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.06
+        );
 
     padding: 14px;
 
@@ -262,48 +329,64 @@ button:hover {
     margin: 7px 0;
 }
 
-.notification.unread {
-    border-left: 4px solid #24d17e;
 
-    background: rgba(
-        36,
-        209,
-        126,
-        0.12
-    );
+.notification.unread {
+    border-left:
+        4px solid
+        #24d17e;
+
+    background:
+        rgba(
+            36,
+            209,
+            126,
+            0.12
+        );
 }
+
 
 .notification p {
-    margin: 8px 0;
+    margin:
+        8px 0;
 }
+
 
 .notification small {
     opacity: 0.6;
 }
 
+
 .notification-badge {
     display: none;
 
-    background: #24d17e;
+    background:
+        #24d17e;
 
-    color: #06140e;
+    color:
+        #06140e;
 
-    border-radius: 50%;
+    border-radius:
+        50%;
 
-    padding: 3px 8px;
+    padding:
+        3px 8px;
 
-    font-size: 13px;
+    font-size:
+        13px;
 
-    vertical-align: middle;
+    vertical-align:
+        middle;
 }
 
+
 .solicitud {
-    background: rgba(
-        255,
-        255,
-        255,
-        0.07
-    );
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.07
+        );
 
     padding: 15px;
 
@@ -312,120 +395,445 @@ button:hover {
     margin: 8px 0;
 }
 
-.solicitud h3 {
-    margin: 8px 0;
 
-    font-size: 25px;
+.solicitud h3 {
+    margin:
+        8px 0;
+
+    font-size:
+        25px;
 }
+
 
 .solicitud small {
     display: block;
 
     opacity: 0.6;
 
-    margin-top: 8px;
+    margin-top:
+        8px;
 }
+
 
 .solicitud button {
     width: auto;
 
-    margin-top: 12px;
+    margin-top:
+        12px;
 }
+
 
 .estado-pendiente {
-    color: #ffd166;
+    color:
+        #ffd166;
 }
+
 
 .estado-aceptada {
-    color: #24d17e;
+    color:
+        #24d17e;
 }
 
+
 .estado-rechazada {
-    color: #ff7070;
+    color:
+        #ff7070;
 }
+
 
 .job-row {
     display: flex;
 
-    justify-content: space-between;
+    justify-content:
+        space-between;
 
-    gap: 10px;
+    gap:
+        10px;
 
-    align-items: center;
+    align-items:
+        center;
 
-    background: rgba(
-        255,
-        255,
-        255,
-        0.06
-    );
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.06
+        );
 
-    padding: 12px;
+    padding:
+        12px;
 
-    border-radius: 10px;
+    border-radius:
+        10px;
 
-    margin: 6px 0;
+    margin:
+        6px 0;
 
-    text-align: left;
+    text-align:
+        left;
 }
+
 
 .job-row span {
-    opacity: 0.8;
+    opacity:
+        0.8;
 
-    text-align: right;
+    text-align:
+        right;
 }
+
 
 .admin-warning {
-    opacity: 0.7;
+    opacity:
+        0.7;
 
-    font-size: 14px;
+    font-size:
+        14px;
 }
+
 
 .danger-button {
-    background: #d94b4b;
+    background:
+        #d94b4b;
 
-    color: white;
+    color:
+        white;
 }
+
 
 .logout-button {
-    margin-top: 30px;
+    margin-top:
+        30px;
 
-    background: #444;
+    background:
+        #444;
 
-    color: white;
+    color:
+        white;
 }
+
+
+/* =====================================================
+   TINCOINS
+===================================================== */
+
+
+.tincoin-card {
+    border:
+        1px solid
+        rgba(
+            36,
+            209,
+            126,
+            0.3
+        );
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(
+                36,
+                209,
+                126,
+                0.08
+            ),
+            rgba(
+                0,
+                0,
+                0,
+                0.12
+            )
+        );
+}
+
+
+.tincoin-price-box {
+    background:
+        rgba(
+            0,
+            0,
+            0,
+            0.25
+        );
+
+    padding:
+        22px;
+
+    border-radius:
+        18px;
+
+    margin:
+        20px 0;
+}
+
+
+.tincoin-price-box span {
+    display:
+        block;
+
+    opacity:
+        0.7;
+
+    margin:
+        5px 0;
+}
+
+
+.tincoin-price-box strong {
+    display:
+        block;
+
+    font-size:
+        30px;
+
+    margin:
+        8px 0;
+}
+
+
+.tincoin-up {
+    color:
+        #24d17e;
+}
+
+
+.tincoin-down {
+    color:
+        #ff7070;
+}
+
+
+.tincoin-next-box {
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.06
+        );
+
+    padding:
+        12px;
+
+    border-radius:
+        12px;
+
+    margin:
+        15px 0;
+}
+
+
+.tincoin-next-box strong {
+    display:
+        block;
+
+    margin-top:
+        5px;
+}
+
+
+#tincoinChart {
+    width:
+        100%;
+
+    height:
+        280px;
+
+    display:
+        block;
+
+    border-radius:
+        15px;
+
+    margin:
+        20px 0;
+
+    background:
+        rgba(
+            0,
+            0,
+            0,
+            0.12
+        );
+}
+
+
+.tincoin-stats {
+    margin-top:
+        20px;
+}
+
+
+.tincoin-warning {
+    opacity:
+        0.6;
+
+    font-size:
+        13px;
+
+    line-height:
+        1.5;
+
+    margin-top:
+        18px;
+}
+
+
+.secondary-button {
+    background:
+        #555;
+
+    color:
+        white;
+}
+
+
+/* =====================================================
+   ADMIN TINCOIN
+===================================================== */
+
+
+.admin-tincoin-card {
+    border:
+        1px solid
+        rgba(
+            36,
+            209,
+            126,
+            0.35
+        );
+}
+
+
+.admin-tincoin-countdown {
+    background:
+        rgba(
+            0,
+            0,
+            0,
+            0.2
+        );
+
+    padding:
+        14px;
+
+    border-radius:
+        12px;
+
+    margin:
+        15px 0;
+}
+
+
+.admin-tincoin-countdown strong {
+    display:
+        block;
+
+    margin-top:
+        6px;
+}
+
+
+.admin-tincoin-buttons {
+    display:
+        flex;
+
+    justify-content:
+        center;
+
+    flex-wrap:
+        wrap;
+
+    gap:
+        4px;
+
+    margin:
+        10px 0;
+}
+
+
+.admin-tincoin-buttons button {
+    width:
+        auto;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
 
 @media (max-width: 500px) {
 
     .container {
-        padding: 25px 0;
+        padding:
+            25px 0;
     }
+
 
     h1 {
-        font-size: 32px;
+        font-size:
+            32px;
     }
+
 
     .stats {
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
     }
+
 
     .profile-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
     }
+
 
     .job-row {
-        flex-direction: column;
+        flex-direction:
+            column;
 
-        align-items: flex-start;
+        align-items:
+            flex-start;
     }
+
 
     .job-row span {
-        text-align: left;
+        text-align:
+            left;
     }
 
-    button {
-        width: 90%;
 
-        max-width: 400px;
+    button {
+        width:
+            90%;
+
+        max-width:
+            400px;
+    }
+
+
+    .admin-tincoin-buttons {
+        flex-direction:
+            column;
+    }
+
+
+    .admin-tincoin-buttons button {
+        width:
+            90%;
+    }
+
+
+    #tincoinChart {
+        height:
+            220px;
+    }
+
+
+    .tincoin-price-box strong {
+        font-size:
+            25px;
     }
 }
