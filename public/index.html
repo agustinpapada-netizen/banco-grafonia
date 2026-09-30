@@ -133,9 +133,7 @@
 
                     <span>💸 Enviado</span>
 
-                    <strong
-                        id="sentMonth"
-                    >
+                    <strong id="sentMonth">
                         ₲0
                     </strong>
 
@@ -145,9 +143,7 @@
 
                     <span>📥 Recibido</span>
 
-                    <strong
-                        id="receivedMonth"
-                    >
+                    <strong id="receivedMonth">
                         ₲0
                     </strong>
 
@@ -157,9 +153,7 @@
 
                     <span>📤 Operaciones</span>
 
-                    <strong
-                        id="sentOperations"
-                    >
+                    <strong id="sentOperations">
                         0
                     </strong>
 
@@ -169,9 +163,7 @@
 
                     <span>📥 Recibos</span>
 
-                    <strong
-                        id="receivedOperations"
-                    >
+                    <strong id="receivedOperations">
                         0
                     </strong>
 
@@ -352,9 +344,7 @@
 
                     <span>👥 Usuarios</span>
 
-                    <strong
-                        id="economyUsers"
-                    >
+                    <strong id="economyUsers">
                         0
                     </strong>
 
@@ -364,9 +354,7 @@
 
                     <span>💰 Dinero total</span>
 
-                    <strong
-                        id="economyMoney"
-                    >
+                    <strong id="economyMoney">
                         ₲0
                     </strong>
 
@@ -376,15 +364,185 @@
 
                     <span>💸 Transferencias</span>
 
-                    <strong
-                        id="economyTransfers"
-                    >
+                    <strong id="economyTransfers">
                         0
                     </strong>
 
                 </div>
 
             </div>
+
+        </div>
+
+
+        <!-- =========================
+             TINCOINS
+        ========================== -->
+
+        <div class="card tincoin-card">
+
+            <h2>
+                🪙 Mercado TinCoin
+            </h2>
+
+            <p>
+                Invertí tu dinero en la criptomoneda de Grafonia.
+            </p>
+
+            <div class="tincoin-price-box">
+
+                <span>
+                    Precio actual
+                </span>
+
+                <strong
+                    id="tincoinPrice"
+                >
+                    ₲1.0000
+                </strong>
+
+                <span
+                    id="tincoinPercent"
+                    class="tincoin-up"
+                >
+                    +0.00%
+                </span>
+
+            </div>
+
+
+            <div class="tincoin-next-box">
+
+                ⏱️ Próximo cambio automático:
+
+                <strong
+                    id="tincoinNext"
+                >
+                    Calculando...
+                </strong>
+
+            </div>
+
+
+            <canvas
+                id="tincoinChart"
+            ></canvas>
+
+
+            <div class="stats tincoin-stats">
+
+                <div class="stat">
+
+                    <span>
+                        🪙 Tus TinCoins
+                    </span>
+
+                    <strong
+                        id="tincoinAmount"
+                    >
+                        0.00000000
+                    </strong>
+
+                </div>
+
+                <div class="stat">
+
+                    <span>
+                        💰 Capital invertido
+                    </span>
+
+                    <strong
+                        id="tincoinCapital"
+                    >
+                        ₲0.00
+                    </strong>
+
+                </div>
+
+                <div class="stat">
+
+                    <span>
+                        📊 Valor actual
+                    </span>
+
+                    <strong
+                        id="tincoinValue"
+                    >
+                        ₲0.00
+                    </strong>
+
+                </div>
+
+                <div class="stat">
+
+                    <span>
+                        📈 Ganancia / pérdida
+                    </span>
+
+                    <strong
+                        id="tincoinProfit"
+                    >
+                        ₲0.00
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <h3>
+                📥 Invertir
+            </h3>
+
+            <p>
+                El dinero se descuenta de tu saldo disponible.
+            </p>
+
+            <input
+                id="tincoinInvestment"
+                type="number"
+                min="1"
+                step="1"
+                placeholder="Dinero a invertir"
+            >
+
+            <button
+                onclick="invertirTinCoin()"
+            >
+                🪙 Invertir
+            </button>
+
+
+            <h3>
+                📤 Retirar inversión
+            </h3>
+
+            <input
+                id="tincoinWithdrawal"
+                type="number"
+                min="0.00000001"
+                step="0.00000001"
+                placeholder="Cantidad de TinCoins"
+            >
+
+            <button
+                onclick="retirarTinCoin()"
+            >
+                💸 Retirar
+            </button>
+
+            <button
+                class="secondary-button"
+                onclick="retirarTodoTinCoin()"
+            >
+                💰 Retirar todo
+            </button>
+
+
+            <p class="tincoin-warning">
+                ⚠️ El precio puede subir o bajar.
+                El valor de una inversión no está garantizado.
+            </p>
 
         </div>
 
@@ -430,23 +588,51 @@
         <div class="stats">
 
             <div class="stat">
-                <span>💰 Circulación</span>
-                <strong id="adminTotal">0</strong>
+
+                <span>
+                    💰 Circulación
+                </span>
+
+                <strong id="adminTotal">
+                    0
+                </strong>
+
             </div>
 
             <div class="stat">
-                <span>👥 Usuarios</span>
-                <strong id="adminUsers">0</strong>
+
+                <span>
+                    👥 Usuarios
+                </span>
+
+                <strong id="adminUsers">
+                    0
+                </strong>
+
             </div>
 
             <div class="stat">
-                <span>💸 Transferencias</span>
-                <strong id="adminTransfers">0</strong>
+
+                <span>
+                    💸 Transferencias
+                </span>
+
+                <strong id="adminTransfers">
+                    0
+                </strong>
+
             </div>
 
             <div class="stat">
-                <span>📊 Dinero transferido</span>
-                <strong id="adminTransferred">0</strong>
+
+                <span>
+                    📊 Dinero transferido
+                </span>
+
+                <strong id="adminTransferred">
+                    0
+                </strong>
+
             </div>
 
         </div>
@@ -494,6 +680,204 @@
         >
             ➖ Quitar dinero
         </button>
+
+
+        <!-- TINCOINS ADMIN -->
+
+        <div class="card admin-tincoin-card">
+
+            <h2>
+                🪙 Administrar TinCoin
+            </h2>
+
+            <p>
+                Control del mercado de inversiones de Grafonia.
+            </p>
+
+            <div class="stats">
+
+                <div class="stat">
+
+                    <span>
+                        🪙 Precio actual
+                    </span>
+
+                    <strong
+                        id="adminTincoinPrice"
+                    >
+                        ₲1.0000
+                    </strong>
+
+                </div>
+
+                <div class="stat">
+
+                    <span>
+                        👥 Inversores
+                    </span>
+
+                    <strong
+                        id="adminTincoinInvestors"
+                    >
+                        0
+                    </strong>
+
+                </div>
+
+                <div class="stat">
+
+                    <span>
+                        💰 Capital invertido
+                    </span>
+
+                    <strong
+                        id="adminTincoinCapital"
+                    >
+                        ₲0
+                    </strong>
+
+                </div>
+
+                <div class="stat">
+
+                    <span>
+                        📊 Valor actual
+                    </span>
+
+                    <strong
+                        id="adminTincoinValue"
+                    >
+                        ₲0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-tincoin-countdown">
+
+                ⏱️ Próximo cambio automático:
+
+                <strong
+                    id="adminTincoinNext"
+                >
+                    Calculando...
+                </strong>
+
+            </div>
+
+
+            <h3>
+                🛠️ Cambiar precio directamente
+            </h3>
+
+            <input
+                id="adminTincoinNewPrice"
+                type="number"
+                min="0.01"
+                step="0.0001"
+                placeholder="Nuevo precio"
+            >
+
+            <button
+                onclick="cambiarPrecioTinCoin()"
+            >
+                🪙 Cambiar precio
+            </button>
+
+
+            <h3>
+                📈📉 Cambiar por porcentaje
+            </h3>
+
+            <input
+                id="adminTincoinPercent"
+                type="number"
+                step="0.01"
+                placeholder="Ej: 10 o -10"
+            >
+
+            <button
+                onclick="aplicarPorcentajeTinCoin()"
+            >
+                🛠️ Aplicar porcentaje
+            </button>
+
+
+            <div class="admin-tincoin-buttons">
+
+                <button
+                    onclick="cambiarPorcentajeTinCoin(10)"
+                >
+                    📈 +10%
+                </button>
+
+                <button
+                    onclick="cambiarPorcentajeTinCoin(-10)"
+                >
+                    📉 -10%
+                </button>
+
+            </div>
+
+
+            <h3>
+                📊 Resultado global
+            </h3>
+
+            <p>
+                Ganancia/pérdida de todas las posiciones:
+            </p>
+
+            <strong
+                id="adminTincoinProfit"
+                class="tincoin-up"
+            >
+                ₲0.00
+            </strong>
+
+        </div>
+
+
+        <!-- HISTORIAL TINCOIN -->
+
+        <div class="card">
+
+            <h2>
+                📈 Historial del precio TinCoin
+            </h2>
+
+            <p class="admin-warning">
+                Acá se registra cada subida y bajada.
+            </p>
+
+            <div
+                id="adminTincoinHistory"
+                class="historial"
+            ></div>
+
+        </div>
+
+
+        <!-- OPERACIONES TINCOIN -->
+
+        <div class="card">
+
+            <h2>
+                💼 Operaciones TinCoin
+            </h2>
+
+            <p class="admin-warning">
+                🔒 Solo visible para el administrador.
+            </p>
+
+            <div
+                id="adminTincoinOperations"
+                class="historial"
+            ></div>
+
+        </div>
 
 
         <!-- EMPLEOS -->
@@ -590,7 +974,7 @@
         </h2>
 
         <p class="admin-warning">
-            Acá queda registrado lo que hace el administrador.
+            Acá queda registrado lo que hace el administrador y los cambios del sistema.
         </p>
 
         <div
@@ -616,4 +1000,5 @@
 <script src="app.js"></script>
 
 </body>
+
 </html>
