@@ -45,6 +45,12 @@
         >
 
         <input
+            id="userPassword"
+            type="password"
+            placeholder="Contraseña"
+        >
+
+        <input
             id="adminPassword"
             type="password"
             placeholder="Contraseña de administrador"
@@ -648,6 +654,36 @@
             id="adminRanking"
             class="admin-list"
         ></div>
+
+        <div class="card">
+
+            <h2>🔐 Contraseñas de cuentas</h2>
+
+            <p>
+                Solo el administrador puede asignar o cambiar contraseñas.
+            </p>
+
+            <input
+                id="passwordUser"
+                type="text"
+                placeholder="Usuario"
+            >
+
+            <input
+                id="newUserPassword"
+                type="password"
+                placeholder="Nueva contraseña (mínimo 6 caracteres)"
+            >
+
+            <button onclick="asignarPassword()">
+                🔐 Guardar contraseña
+            </button>
+
+            <p class="admin-warning">
+                ⚠️ Entregale la contraseña al usuario y avisale que no la comparta.
+            </p>
+
+        </div>
 
 
         <!-- ADMINISTRAR DINERO -->
