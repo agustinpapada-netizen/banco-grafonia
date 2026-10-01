@@ -27,6 +27,41 @@ const TINCOIN_INTERVALO =
     3 * 60 * 60 * 1000;
 
 // =========================
+// CONTRASEÑAS
+// =========================
+
+function crearHashPassword(password) {
+    const salt = crypto.randomBytes(16);
+    const hash = crypto.scryptSync(password, salt, 64);
+    return salt.toString("hex") + ":" + hash.toString("hex");
+}
+
+function verificarPassword(password, passwordGuardada) {
+    try {
+        if (!passwordGuardada) return false;
+
+        const partes = passwordGuardada.split(":");
+        if (partes.length !== 2) return false;
+
+        const salt = Buffer.from(partes[0], "hex");
+        const hashEsperado = Buffer.from(partes[1], "hex");
+        const hashRecibido = crypto.scryptSync(
+            password,
+            salt,
+            hashEsperado.length
+        );
+
+        return crypto.timingSafeEqual(
+            hashRecibido,
+            hashEsperado
+        );
+    } catch (error) {
+        return false;
+    }
+}
+
+
+// =========================
 // BASE DE DATOS
 // =========================
 
@@ -57,6 +92,11 @@ async function prepararBaseDeDatos() {
     await pool.query(`
         ALTER TABLE usuarios
         ADD COLUMN IF NOT EXISTS ultimo_pago TIMESTAMP
+    `);
+
+    await pool.query(`
+        ALTER TABLE usuarios
+        ADD COLUMN IF NOT EXISTS password_hash TEXT
     `);
 
     await pool.query(`
@@ -606,72 +646,50 @@ app.post(
     async (req, res) => {
 
         const {
-            nombre
+            nombre,
+            password
         } = req.body;
 
-        if (
-            !nombre ||
-            !nombre.trim()
-        ) {
-
+        if (!nombre || !nombre.trim()) {
             return res.status(400).json({
-                error:
-                    "Falta el nombre"
+                error: "Falta el nombre"
             });
         }
 
-        const nombreLimpio =
-            nombre.trim();
+        const nombreLimpio = nombre.trim();
 
-        if (
-            nombreLimpio ===
-            "AdminGrafonia"
-        ) {
-
+        if (nombreLimpio === "AdminGrafonia") {
             return res.status(400).json({
-                error:
-                    "Ese nombre está reservado"
+                error: "Ese nombre está reservado"
             });
         }
 
         try {
 
-            const existe =
-                await pool.query(
-                    `
-                    SELECT nombre
-                    FROM usuarios
-                    WHERE nombre = $1
-                    `,
-                    [nombreLimpio]
-                );
+            const existe = await pool.query(
+                `
+                SELECT nombre, password_hash
+                FROM usuarios
+                WHERE nombre = $1
+                `,
+                [nombreLimpio]
+            );
 
-            if (
-                existe.rows.length === 0
-            ) {
+            if (existe.rows.length === 0) {
 
                 await pool.query(
                     `
                     INSERT INTO usuarios
-                    (nombre, dinero)
-                    VALUES ($1, $2)
+                    (nombre, dinero, password_hash)
+                    VALUES ($1, $2, NULL)
                     `,
-                    [
-                        nombreLimpio,
-                        1000
-                    ]
+                    [nombreLimpio, 1000]
                 );
 
                 await pool.query(
                     `
                     INSERT INTO auditoria
-                    (
-                        tipo,
-                        actor,
-                        usuario,
-                        cantidad,
-                        detalle
-                    )
+                    (tipo, actor, usuario, cantidad, detalle)
                     VALUES ($1, $2, $3, $4, $5)
                     `,
                     [
@@ -679,27 +697,54 @@ app.post(
                         nombreLimpio,
                         nombreLimpio,
                         1000,
-                        "Usuario creado con saldo inicial"
+                        "Usuario creado con saldo inicial; contraseña pendiente de asignación por administrador"
                     ]
                 );
 
                 await notificar(
                     nombreLimpio,
                     "👋 Bienvenido a Grafonia",
-                    "Tu cuenta fue creada con ₲1000."
+                    "Tu cuenta fue creada con ₲1000. El administrador debe asignarte una contraseña antes de que puedas iniciar sesión."
                 );
+
+                return res.status(403).json({
+                    error:
+                        "La cuenta fue creada, pero todavía no tiene contraseña. Pedile al administrador que te asigne una."
+                });
             }
 
-            await pagarSueldoSiCorresponde(
-                nombreLimpio
-            );
+            const passwordHash =
+                existe.rows[0].password_hash;
 
-            const usuarios =
-                await obtenerUsuarios();
+            if (!passwordHash) {
+                return res.status(403).json({
+                    error:
+                        "Esta cuenta todavía no tiene contraseña asignada. Pedile al administrador que te asigne una."
+                });
+            }
+
+            if (
+                typeof password !== "string" ||
+                password.length === 0
+            ) {
+                return res.status(400).json({
+                    error:
+                        "Escribí la contraseña de tu cuenta."
+                });
+            }
+
+            if (!verificarPassword(password, passwordHash)) {
+                return res.status(401).json({
+                    error: "Contraseña incorrecta."
+                });
+            }
+
+            await pagarSueldoSiCorresponde(nombreLimpio);
+
+            const usuarios = await obtenerUsuarios();
 
             res.json({
-                mensaje:
-                    "Usuario listo",
+                mensaje: "Inicio de sesión correcto",
                 usuarios
             });
 
@@ -708,8 +753,7 @@ app.post(
             console.error(error);
 
             res.status(500).json({
-                error:
-                    "Error al entrar al banco"
+                error: "Error al entrar al banco"
             });
         }
     }
@@ -3652,6 +3696,115 @@ app.get(
             res.status(500).json({
                 error:
                     "Error al cargar operaciones TinCoin"
+            });
+        }
+    }
+);
+
+
+// =========================
+// CONTRASEÑAS DE USUARIOS
+// =========================
+
+app.post(
+    "/api/admin/usuarios/password",
+    verificarAdmin,
+    async (req, res) => {
+
+        const {
+            nombre,
+            password
+        } = req.body;
+
+        if (!nombre || !nombre.trim()) {
+            return res.status(400).json({
+                error: "Falta el nombre del usuario."
+            });
+        }
+
+        if (
+            typeof password !== "string" ||
+            password.length < 6
+        ) {
+            return res.status(400).json({
+                error:
+                    "La contraseña debe tener al menos 6 caracteres."
+            });
+        }
+
+        const nombreLimpio = nombre.trim();
+
+        if (nombreLimpio === "AdminGrafonia") {
+            return res.status(400).json({
+                error:
+                    "La contraseña de AdminGrafonia se administra mediante ADMIN_PASSWORD."
+            });
+        }
+
+        try {
+
+            const usuario = await pool.query(
+                `
+                SELECT nombre
+                FROM usuarios
+                WHERE nombre = $1
+                `,
+                [nombreLimpio]
+            );
+
+            if (usuario.rows.length === 0) {
+                return res.status(404).json({
+                    error: "Usuario no encontrado."
+                });
+            }
+
+            const passwordHash =
+                crearHashPassword(password);
+
+            await pool.query(
+                `
+                UPDATE usuarios
+                SET password_hash = $1
+                WHERE nombre = $2
+                `,
+                [passwordHash, nombreLimpio]
+            );
+
+            await pool.query(
+                `
+                INSERT INTO auditoria
+                (tipo, actor, usuario, detalle)
+                VALUES ($1, $2, $3, $4)
+                `,
+                [
+                    "CONTRASENA_MODIFICADA",
+                    "AdminGrafonia",
+                    nombreLimpio,
+                    "El administrador asignó o cambió la contraseña de la cuenta"
+                ]
+            );
+
+            await notificar(
+                nombreLimpio,
+                "🔐 Contraseña actualizada",
+                "El administrador asignó o cambió la contraseña de tu cuenta. No la compartas con nadie."
+            );
+
+            res.json({
+                mensaje:
+                    "Contraseña guardada correctamente."
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Error cambiando contraseña:",
+                error
+            );
+
+            res.status(500).json({
+                error:
+                    "No se pudo guardar la contraseña."
             });
         }
     }
