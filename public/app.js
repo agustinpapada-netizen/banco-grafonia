@@ -49,6 +49,14 @@ async function entrar() {
             .value
             .trim();
 
+    const userPasswordInput =
+        document.getElementById("userPassword");
+
+    const userPassword =
+        userPasswordInput
+            ? userPasswordInput.value
+            : "";
+
     if (!nombre) {
 
         alert(
@@ -153,6 +161,14 @@ async function entrar() {
     // USUARIO NORMAL
     // =========================
 
+    if (!userPassword) {
+        if (userPasswordInput) {
+            userPasswordInput.focus();
+        }
+        alert("Escribí la contraseña de tu cuenta.");
+        return;
+    }
+
     try {
 
         const respuesta =
@@ -167,7 +183,8 @@ async function entrar() {
                     },
 
                     body: JSON.stringify({
-                        nombre
+                        nombre,
+                        password: userPassword
                     })
                 }
             );
@@ -2210,6 +2227,67 @@ async function retirarTodoTinCoin() {
 
 
 // =========================
+// ASIGNAR CONTRASEÑA
+// =========================
+
+async function asignarPassword() {
+    const usuario =
+        document.getElementById("passwordUser").value.trim();
+
+    const password =
+        document.getElementById("newUserPassword").value;
+
+    if (!usuario) {
+        alert("Escribí el nombre del usuario.");
+        return;
+    }
+
+    if (password.length < 6) {
+        alert("La contraseña debe tener al menos 6 caracteres.");
+        return;
+    }
+
+    try {
+        const respuesta = await fetch(
+            "/api/admin/usuarios/password",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-admin-token": adminToken
+                },
+                body: JSON.stringify({
+                    nombre: usuario,
+                    password
+                })
+            }
+        );
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            alert(datos.error || "No se pudo guardar la contraseña.");
+            return;
+        }
+
+        document.getElementById("newUserPassword").value = "";
+
+        alert(
+            "🔐 Contraseña guardada para " +
+            usuario +
+            ".\n\nAvisale al usuario que no debe compartirla."
+        );
+
+        actualizarAuditoria();
+
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo conectar con Banco Grafonia 😭");
+    }
+}
+
+
+// =========================
 // MOSTRAR ADMIN
 // =========================
 
@@ -3950,6 +4028,13 @@ async function cerrarSesion() {
         "usuarioActual"
     );
 
+    const userPasswordInput =
+        document.getElementById("userPassword");
+
+    if (userPasswordInput) {
+        userPasswordInput.value = "";
+    }
+
     document
         .getElementById(
             "admin"
@@ -4108,12 +4193,6 @@ cargarUsuarios()
                     console.error(error);
                 }
 
-            } else if (
-                usuarioActual &&
-                usuarioActual in usuarios
-            ) {
-
-                mostrarBanco();
             }
         }
     );
