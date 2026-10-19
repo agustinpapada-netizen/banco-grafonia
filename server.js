@@ -828,14 +828,14 @@ app.get(
                                 WHERE remitente = $1
                             ),
                             0
-                        )::INTEGER AS dineroEnviado,
+                        )::INTEGER AS "dineroEnviado",
 
                         COALESCE(
                             SUM(cantidad) FILTER (
                                 WHERE destinatario = $1
                             ),
                             0
-                        )::INTEGER AS dineroRecibido
+                        )::INTEGER AS "dineroRecibido"
 
                     FROM transferencias
 
@@ -2980,9 +2980,27 @@ app.post(
                     config.rows[0].precio
                 );
 
-            const dineroRecibido =
+            const valorBruto =
                 tincoinsARetirar *
                 precio;
+
+            // El saldo bancario se guarda en pesos enteros.
+            // Redondear antes de actualizarlo evita incompatibilidades
+            // al retirar una cantidad fraccionaria de TinCoins.
+            const dineroRecibido =
+                Math.round(valorBruto);
+
+            if (dineroRecibido <= 0) {
+
+                await client.query(
+                    "ROLLBACK"
+                );
+
+                return res.status(400).json({
+                    error:
+                        "El valor del retiro es menor a ₲1. Aumentá la cantidad de TinCoins para poder retirarla."
+                });
+            }
 
             const proporcion =
                 tincoinsARetirar /
