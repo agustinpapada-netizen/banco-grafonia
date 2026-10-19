@@ -1,516 +1,555 @@
-body {
-    margin: 0;
 
-    font-family:
-        Arial,
-        sans-serif;
+/* =====================================================
+   BANCO GRAFONIA
+   Paleta: rojo ladrillo, verde salvia, azul pizarra
+   y amarillo mostaza. Todos los colores son apagados.
+===================================================== */
 
-    background:
-        linear-gradient(
-            135deg,
-            #101820,
-            #1d3b35
-        );
 
-    color: white;
+/* =========================
+   PALETA PRINCIPAL
+========================= */
 
-    min-height: 100vh;
+:root {
+    --rojo: #c47777;
+    --rojo-fondo: rgba(196, 119, 119, 0.13);
+    --rojo-borde: rgba(196, 119, 119, 0.32);
+
+    --verde: #80b49a;
+    --verde-fondo: rgba(128, 180, 154, 0.13);
+    --verde-borde: rgba(128, 180, 154, 0.30);
+
+    --azul: #829fc7;
+    --azul-fondo: rgba(130, 159, 199, 0.13);
+    --azul-borde: rgba(130, 159, 199, 0.30);
+
+    --amarillo: #d1b875;
+    --amarillo-fondo: rgba(209, 184, 117, 0.13);
+    --amarillo-borde: rgba(209, 184, 117, 0.30);
+
+    --fondo: #151a22;
+    --fondo-secundario: #202834;
+    --superficie: rgba(255, 255, 255, 0.045);
+    --superficie-hover: rgba(255, 255, 255, 0.075);
+
+    --texto: #edf0f5;
+    --texto-secundario: #a6afbd;
+    --borde: rgba(220, 230, 245, 0.09);
+
+    --radio: 16px;
+    --sombra: 0 12px 30px rgba(0, 0, 0, 0.16);
 }
 
 
-.container {
-    width: 90%;
+/* =====================================================
+   GENERAL
+===================================================== */
 
-    max-width: 700px;
-
-    margin: auto;
-
-    padding: 40px 0;
-
-    text-align: center;
-}
-
-
-h1 {
-    font-size: 42px;
-
-    margin-bottom: 8px;
-}
-
-
-h2 {
-    margin-top: 30px;
-}
-
-
-input {
-    display: block;
-
-    width: 90%;
-
-    max-width: 400px;
-
-    margin: 12px auto;
-
-    padding: 14px;
-
-    border-radius: 10px;
-
-    border: none;
-
-    font-size: 16px;
-
+* {
     box-sizing: border-box;
 }
 
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+
+    background:
+        radial-gradient(
+            ellipse at top left,
+            rgba(130, 159, 199, 0.09),
+            transparent 45%
+        ),
+        radial-gradient(
+            ellipse at bottom right,
+            rgba(128, 180, 154, 0.07),
+            transparent 45%
+        ),
+        linear-gradient(
+            135deg,
+            #151a22,
+            #1b222c 55%,
+            #202831
+        );
+
+    color: var(--texto);
+    min-height: 100vh;
+    line-height: 1.5;
+}
+
+::selection {
+    background: rgba(130, 159, 199, 0.35);
+    color: white;
+}
+
+.container {
+    width: 90%;
+    max-width: 700px;
+    margin: auto;
+    padding: 40px 0;
+    text-align: center;
+}
+
+h1 {
+    font-size: 42px;
+    line-height: 1.15;
+    margin-bottom: 8px;
+    letter-spacing: -1px;
+}
+
+h2 {
+    margin-top: 30px;
+    line-height: 1.3;
+}
+
+h3 {
+    line-height: 1.35;
+}
+
+p {
+    color: var(--texto-secundario);
+}
+
+
+/* =====================================================
+   CAMPOS DE TEXTO
+===================================================== */
+
+input {
+    display: block;
+    width: 90%;
+    max-width: 400px;
+    margin: 12px auto;
+    padding: 14px 16px;
+
+    border-radius: 11px;
+    border: 1px solid var(--borde);
+
+    background: rgba(10, 14, 20, 0.55);
+    color: var(--texto);
+
+    font-family: inherit;
+    font-size: 16px;
+
+    outline: none;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+input::placeholder {
+    color: #788393;
+}
+
+input:focus {
+    border-color: var(--azul);
+    background: rgba(10, 14, 20, 0.8);
+    box-shadow: 0 0 0 3px rgba(130, 159, 199, 0.12);
+}
+
+
+/* =====================================================
+   BOTONES
+===================================================== */
 
 button {
     padding: 13px 25px;
-
     margin: 6px;
 
-    border: none;
+    border: 1px solid transparent;
+    border-radius: 11px;
 
-    border-radius: 10px;
+    background: #789f89;
+    color: #101b16;
 
-    background: #24d17e;
-
-    color: #06140e;
-
+    font-family: inherit;
+    font-size: 14px;
     font-weight: bold;
 
     cursor: pointer;
 
-    transition: 0.2s;
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
 }
-
 
 button:hover {
-    transform:
-        translateY(-2px);
-
-    filter:
-        brightness(1.1);
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
+button:active {
+    transform: translateY(0);
+}
+
+button:focus-visible {
+    outline: 2px solid var(--azul);
+    outline-offset: 3px;
+}
+
+
+/* =====================================================
+   SALDO PRINCIPAL
+===================================================== */
 
 .balance {
+    position: relative;
+    overflow: hidden;
+
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.1
+        linear-gradient(
+            130deg,
+            rgba(128, 180, 154, 0.15),
+            rgba(130, 159, 199, 0.10)
         );
 
-    padding: 25px;
-
-    border-radius: 20px;
-
+    padding: 28px;
+    border-radius: 22px;
     margin: 25px 0;
-}
 
+    border: 1px solid rgba(128, 180, 154, 0.20);
+    box-shadow: var(--sombra);
+}
 
 .balance h2 {
     font-size: 32px;
-
-    margin:
-        10px 0 0;
+    margin: 10px 0 0;
+    color: var(--verde);
+    overflow-wrap: anywhere;
 }
 
+
+/* =====================================================
+   TARJETAS GENERALES
+===================================================== */
 
 .card {
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.07
-        );
+    background: var(--superficie);
 
-    padding: 20px;
-
-    border-radius: 18px;
-
+    padding: 22px;
+    border-radius: var(--radio);
     margin: 25px 0;
 
-    border:
-        1px solid
-        rgba(
-            255,
-            255,
-            255,
-            0.06
-        );
+    border: 1px solid var(--borde);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+
+    text-align: center;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
 }
 
+.card:hover {
+    border-color: rgba(220, 230, 245, 0.15);
+}
+
+
+/* =====================================================
+   RANKING
+===================================================== */
 
 #ranking,
 #adminRanking {
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.08
-        );
+    background: rgba(130, 159, 199, 0.07);
 
-    padding: 15px;
-
-    border-radius: 15px;
-
+    padding: 16px;
+    border-radius: var(--radio);
     margin-bottom: 30px;
-}
 
+    border: 1px solid var(--azul-borde);
+}
 
 .admin-user {
-    padding: 12px;
+    padding: 13px;
+    margin: 7px 0;
 
-    margin: 6px 0;
-
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.07
-        );
-
-    border-radius: 10px;
-}
-
-
-.historial {
-    background:
-        rgba(
-            0,
-            0,
-            0,
-            0.2
-        );
-
-    border-radius: 15px;
-
-    padding: 12px;
-
-    max-height: 450px;
-
-    overflow-y: auto;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 11px;
 
     text-align: left;
 }
 
 
-.movimiento {
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.07
-        );
+/* =====================================================
+   HISTORIAL Y MOVIMIENTOS
+===================================================== */
+
+.historial {
+    background: rgba(8, 12, 18, 0.38);
+
+    border: 1px solid var(--borde);
+    border-radius: 15px;
 
     padding: 13px;
+    max-height: 450px;
+    overflow-y: auto;
 
-    margin: 7px 0;
-
-    border-radius: 10px;
-
-    line-height: 1.5;
+    text-align: left;
 }
 
+.historial::-webkit-scrollbar {
+    width: 7px;
+}
+
+.historial::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.historial::-webkit-scrollbar-thumb {
+    background: #485362;
+    border-radius: 10px;
+}
+
+.movimiento {
+    background: var(--superficie);
+
+    padding: 14px;
+    margin: 8px 0;
+
+    border: 1px solid rgba(220, 230, 245, 0.055);
+    border-radius: 11px;
+
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
 
 .movimiento small {
     display: block;
-
-    opacity: 0.65;
-
+    color: var(--texto-secundario);
     margin-top: 4px;
 }
 
 
+/* =====================================================
+   ESTADÍSTICAS
+===================================================== */
+
 .stats {
     display: grid;
-
-    grid-template-columns:
-        repeat(2, 1fr);
-
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
-
     margin: 20px 0;
 }
 
-
 .stat {
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.1
-        );
+    background: var(--azul-fondo);
 
-    padding: 18px;
-
+    padding: 19px;
     border-radius: 15px;
+    border: 1px solid var(--azul-borde);
+
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
+.stat:nth-child(4n + 2) {
+    background: var(--verde-fondo);
+    border-color: var(--verde-borde);
+}
+
+.stat:nth-child(4n + 3) {
+    background: var(--amarillo-fondo);
+    border-color: var(--amarillo-borde);
+}
+
+.stat:nth-child(4n + 4) {
+    background: var(--rojo-fondo);
+    border-color: var(--rojo-borde);
+}
 
 .stat span {
     display: block;
-
-    opacity: 0.75;
-
+    color: var(--texto-secundario);
     margin-bottom: 8px;
 }
-
 
 .stat strong {
     font-size: 25px;
 }
 
 
+/* =====================================================
+   PERFIL
+===================================================== */
+
 .profile-grid {
     display: grid;
-
-    grid-template-columns:
-        repeat(2, 1fr);
-
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
 }
 
-
 .profile-grid div {
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.07
-        );
+    background: var(--superficie);
 
-    padding: 15px;
+    padding: 16px;
+    border-radius: 13px;
+    border: 1px solid var(--borde);
 
-    border-radius: 12px;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
-
 
 .profile-grid span {
     display: block;
-
-    opacity: 0.65;
-
+    color: var(--texto-secundario);
     font-size: 13px;
-
     margin-bottom: 6px;
 }
 
-
 .profile-grid strong {
     display: block;
-
     font-size: 18px;
 }
 
 
+/* =====================================================
+   NOTIFICACIONES
+===================================================== */
+
 .notification {
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.06
-        );
+    background: var(--superficie);
 
-    padding: 14px;
-
+    padding: 15px;
     border-radius: 12px;
+    border: 1px solid var(--borde);
 
-    margin: 7px 0;
+    margin: 8px 0;
+    text-align: left;
 }
-
 
 .notification.unread {
-    border-left:
-        4px solid
-        #24d17e;
-
-    background:
-        rgba(
-            36,
-            209,
-            126,
-            0.12
-        );
+    border-left: 4px solid var(--azul);
+    background: var(--azul-fondo);
 }
-
 
 .notification p {
-    margin:
-        8px 0;
+    margin: 8px 0;
 }
-
 
 .notification small {
-    opacity: 0.6;
+    color: var(--texto-secundario);
 }
-
 
 .notification-badge {
     display: none;
 
-    background:
-        #24d17e;
+    background: var(--amarillo);
+    color: #292316;
 
-    color:
-        #06140e;
+    border-radius: 50%;
+    padding: 3px 8px;
 
-    border-radius:
-        50%;
-
-    padding:
-        3px 8px;
-
-    font-size:
-        13px;
-
-    vertical-align:
-        middle;
+    font-size: 13px;
+    vertical-align: middle;
 }
 
+
+/* =====================================================
+   SOLICITUDES
+===================================================== */
 
 .solicitud {
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.07
-        );
+    background: var(--superficie);
 
-    padding: 15px;
+    padding: 16px;
+    border: 1px solid var(--borde);
+    border-radius: 13px;
 
-    border-radius: 12px;
-
-    margin: 8px 0;
+    margin: 9px 0;
+    text-align: left;
+    overflow-wrap: anywhere;
 }
-
 
 .solicitud h3 {
-    margin:
-        8px 0;
-
-    font-size:
-        25px;
+    margin: 8px 0;
+    font-size: 25px;
 }
-
 
 .solicitud small {
     display: block;
-
-    opacity: 0.6;
-
-    margin-top:
-        8px;
+    color: var(--texto-secundario);
+    margin-top: 8px;
 }
-
 
 .solicitud button {
     width: auto;
-
-    margin-top:
-        12px;
+    margin-top: 12px;
 }
-
 
 .estado-pendiente {
-    color:
-        #ffd166;
+    color: var(--amarillo);
 }
-
 
 .estado-aceptada {
-    color:
-        #24d17e;
+    color: var(--verde);
 }
-
 
 .estado-rechazada {
-    color:
-        #ff7070;
+    color: var(--rojo);
 }
 
+
+/* =====================================================
+   TRABAJOS
+===================================================== */
 
 .job-row {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
 
-    justify-content:
-        space-between;
+    background: var(--superficie);
 
-    gap:
-        10px;
+    padding: 13px;
+    border: 1px solid var(--borde);
+    border-radius: 11px;
 
-    align-items:
-        center;
-
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.06
-        );
-
-    padding:
-        12px;
-
-    border-radius:
-        10px;
-
-    margin:
-        6px 0;
-
-    text-align:
-        left;
+    margin: 7px 0;
+    text-align: left;
 }
-
 
 .job-row span {
-    opacity:
-        0.8;
-
-    text-align:
-        right;
+    color: var(--texto-secundario);
+    text-align: right;
 }
-
 
 .admin-warning {
-    opacity:
-        0.7;
-
-    font-size:
-        14px;
+    color: var(--amarillo);
+    font-size: 14px;
 }
 
+
+/* =====================================================
+   BOTONES ESPECIALES
+===================================================== */
 
 .danger-button {
-    background:
-        #d94b4b;
-
-    color:
-        white;
+    background: #a85f63;
+    border-color: rgba(196, 119, 119, 0.25);
+    color: #fff1f1;
 }
 
+.danger-button:hover {
+    background: #b66a6e;
+}
 
 .logout-button {
-    margin-top:
-        30px;
+    margin-top: 30px;
+    background: #343d49;
+    border-color: var(--borde);
+    color: var(--texto);
+}
 
-    background:
-        #444;
-
-    color:
-        white;
+.secondary-button {
+    background: #394655;
+    border-color: rgba(130, 159, 199, 0.2);
+    color: #e4ebf5;
 }
 
 
@@ -518,322 +557,245 @@ button:hover {
    TINCOINS
 ===================================================== */
 
-
 .tincoin-card {
-    border:
-        1px solid
-        rgba(
-            36,
-            209,
-            126,
-            0.3
-        );
+    border: 1px solid var(--amarillo-borde);
 
     background:
         linear-gradient(
             145deg,
-            rgba(
-                36,
-                209,
-                126,
-                0.08
-            ),
-            rgba(
-                0,
-                0,
-                0,
-                0.12
-            )
+            rgba(209, 184, 117, 0.09),
+            rgba(130, 159, 199, 0.055),
+            rgba(0, 0, 0, 0.08)
         );
 }
-
 
 .tincoin-price-box {
-    background:
-        rgba(
-            0,
-            0,
-            0,
-            0.25
-        );
+    background: rgba(8, 12, 18, 0.32);
 
-    padding:
-        22px;
+    padding: 23px;
+    border: 1px solid var(--amarillo-borde);
+    border-radius: 18px;
 
-    border-radius:
-        18px;
-
-    margin:
-        20px 0;
+    margin: 20px 0;
 }
-
 
 .tincoin-price-box span {
-    display:
-        block;
-
-    opacity:
-        0.7;
-
-    margin:
-        5px 0;
+    display: block;
+    color: var(--texto-secundario);
+    margin: 5px 0;
 }
-
 
 .tincoin-price-box strong {
-    display:
-        block;
-
-    font-size:
-        30px;
-
-    margin:
-        8px 0;
+    display: block;
+    font-size: 30px;
+    margin: 8px 0;
+    color: var(--amarillo);
+    overflow-wrap: anywhere;
 }
-
 
 .tincoin-up {
-    color:
-        #24d17e;
+    color: var(--verde);
 }
-
 
 .tincoin-down {
-    color:
-        #ff7070;
+    color: var(--rojo);
 }
-
 
 .tincoin-next-box {
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.06
-        );
+    background: var(--azul-fondo);
 
-    padding:
-        12px;
+    padding: 13px;
+    border: 1px solid var(--azul-borde);
+    border-radius: 12px;
 
-    border-radius:
-        12px;
-
-    margin:
-        15px 0;
+    margin: 15px 0;
 }
-
 
 .tincoin-next-box strong {
-    display:
-        block;
-
-    margin-top:
-        5px;
+    display: block;
+    margin-top: 5px;
+    color: var(--azul);
 }
-
 
 #tincoinChart {
-    width:
-        100%;
+    width: 100%;
+    height: 280px;
+    display: block;
 
-    height:
-        280px;
+    border: 1px solid var(--borde);
+    border-radius: 15px;
 
-    display:
-        block;
-
-    border-radius:
-        15px;
-
-    margin:
-        20px 0;
-
-    background:
-        rgba(
-            0,
-            0,
-            0,
-            0.12
-        );
+    margin: 20px 0;
+    background: rgba(8, 12, 18, 0.30);
 }
-
 
 .tincoin-stats {
-    margin-top:
-        20px;
+    margin-top: 20px;
 }
-
 
 .tincoin-warning {
-    opacity:
-        0.6;
-
-    font-size:
-        13px;
-
-    line-height:
-        1.5;
-
-    margin-top:
-        18px;
-}
-
-
-.secondary-button {
-    background:
-        #555;
-
-    color:
-        white;
+    color: var(--texto-secundario);
+    font-size: 13px;
+    line-height: 1.6;
+    margin-top: 18px;
 }
 
 
 /* =====================================================
-   ADMIN TINCOIN
+   ADMINISTRACIÓN DE TINCOIN
 ===================================================== */
-
 
 .admin-tincoin-card {
-    border:
-        1px solid
-        rgba(
-            36,
-            209,
-            126,
-            0.35
+    border: 1px solid var(--amarillo-borde);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(209, 184, 117, 0.055),
+            rgba(255, 255, 255, 0.025)
         );
 }
-
 
 .admin-tincoin-countdown {
-    background:
-        rgba(
-            0,
-            0,
-            0,
-            0.2
-        );
+    background: rgba(8, 12, 18, 0.28);
 
-    padding:
-        14px;
+    padding: 15px;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
 
-    border-radius:
-        12px;
-
-    margin:
-        15px 0;
+    margin: 15px 0;
 }
-
 
 .admin-tincoin-countdown strong {
-    display:
-        block;
-
-    margin-top:
-        6px;
+    display: block;
+    margin-top: 6px;
+    color: var(--amarillo);
 }
-
 
 .admin-tincoin-buttons {
-    display:
-        flex;
-
-    justify-content:
-        center;
-
-    flex-wrap:
-        wrap;
-
-    gap:
-        4px;
-
-    margin:
-        10px 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 10px 0;
 }
 
-
 .admin-tincoin-buttons button {
-    width:
-        auto;
+    width: auto;
 }
 
 
 /* =====================================================
-   RESPONSIVE
+   DETALLES DE COLOR PARA ACCIONES
 ===================================================== */
 
+/* El verde representa acciones positivas */
+.notification.unread,
+.estado-aceptada {
+    --acento-local: var(--verde);
+}
+
+/* El amarillo representa avisos y pendientes */
+.estado-pendiente {
+    font-weight: bold;
+}
+
+/* El rojo queda reservado para errores y acciones peligrosas */
+.danger-button {
+    box-shadow: none;
+}
+
+
+/* =====================================================
+   RESPONSIVE: CELULARES Y PANTALLAS PEQUEÑAS
+===================================================== */
 
 @media (max-width: 500px) {
-
     .container {
-        padding:
-            25px 0;
+        width: 92%;
+        padding: 25px 0;
     }
-
 
     h1 {
-        font-size:
-            32px;
+        font-size: 32px;
     }
 
+    h2 {
+        font-size: 22px;
+    }
+
+    .balance {
+        padding: 22px 16px;
+    }
+
+    .balance h2 {
+        font-size: 27px;
+    }
+
+    .card {
+        padding: 16px;
+        margin: 19px 0;
+    }
 
     .stats {
-        grid-template-columns:
-            1fr;
+        grid-template-columns: 1fr;
     }
-
 
     .profile-grid {
-        grid-template-columns:
-            1fr;
+        grid-template-columns: 1fr;
     }
-
 
     .job-row {
-        flex-direction:
-            column;
-
-        align-items:
-            flex-start;
+        flex-direction: column;
+        align-items: flex-start;
     }
-
 
     .job-row span {
-        text-align:
-            left;
+        text-align: left;
     }
-
 
     button {
-        width:
-            90%;
-
-        max-width:
-            400px;
+        width: 90%;
+        max-width: 400px;
     }
-
 
     .admin-tincoin-buttons {
-        flex-direction:
-            column;
+        flex-direction: column;
+        align-items: center;
     }
-
 
     .admin-tincoin-buttons button {
-        width:
-            90%;
+        width: 90%;
     }
 
+    .solicitud button {
+        width: auto;
+    }
 
     #tincoinChart {
-        height:
-            220px;
+        height: 220px;
     }
 
+    .tincoin-price-box {
+        padding: 18px 12px;
+    }
 
     .tincoin-price-box strong {
-        font-size:
-            25px;
+        font-size: 25px;
+    }
+}
+
+
+/* =====================================================
+   ACCESIBILIDAD: MENOS ANIMACIONES SI SE PREFIERE
+===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
     }
 }
