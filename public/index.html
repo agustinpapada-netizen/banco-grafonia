@@ -553,6 +553,18 @@
         </div>
 
 
+        <!-- IMPUESTOS Y PRÉSTAMOS -->
+        <div class="card finance-card">
+            <h2>🏛️ Impuestos y préstamos</h2>
+            <p>Consultá tus impuestos y administrá tus solicitudes de préstamo.</p>
+            <div class="loan-form">
+                <input id="prestamoImporte" type="number" min="1" step="1" placeholder="Importe del préstamo en ₲">
+                <input id="prestamoMotivo" type="text" maxlength="240" placeholder="Motivo (opcional)">
+                <button onclick="solicitarPrestamo()">🏦 Solicitar préstamo</button>
+            </div>
+            <div id="misFinanzas" class="finance-list"><p>Iniciá sesión para consultar tus datos.</p></div>
+        </div>
+
         <!-- HISTORIAL -->
 
         <h2>
@@ -717,6 +729,41 @@
             ➖ Quitar dinero
         </button>
 
+
+        <!-- AUTORIDAD FISCAL -->
+        <div class="card finance-card">
+            <h2>🏛️ Autoridad fiscal de Grafonia</h2>
+            <p>La tasa se aplica al saldo disponible de cada cuenta cuando el administrador ejecuta el cobro. Revisá el importe total antes de confirmar.</p>
+            <div class="stats">
+                <div class="stat"><span>📊 Tasa vigente</span><strong id="fiscalTasaActual">5.00%</strong></div>
+                <div class="stat"><span>💰 Recaudación acumulada</span><strong id="fiscalRecaudado">₲0</strong></div>
+                <div class="stat"><span>👥 Registros fiscales</span><strong id="fiscalContribuyentes">0</strong></div>
+            </div>
+            <label for="fiscalTasaInput">Nueva tasa impositiva (0–50 %)</label>
+            <input id="fiscalTasaInput" type="number" min="0" max="50" step="0.01" placeholder="Ej.: 5">
+            <button onclick="guardarTasaFiscal()">⚖️ Guardar tasa fiscal</button>
+            <button class="danger-button" onclick="cobrarImpuestos()">🏛️ Ejecutar cobro global</button>
+            <h3>📜 Últimos cobros</h3>
+            <div id="fiscalHistorial" class="finance-list"></div>
+        </div>
+
+        <!-- PRÉSTAMOS ADMIN -->
+        <div class="card finance-card">
+            <h2>🏦 Administración de préstamos</h2>
+            <div class="stats">
+                <div class="stat"><span>⏳ Pendientes</span><strong id="prestamosPendientes">0</strong></div>
+                <div class="stat"><span>📄 Activos</span><strong id="prestamosActivos">0</strong></div>
+                <div class="stat"><span>💸 Deuda activa</span><strong id="prestamosDeuda">₲0</strong></div>
+            </div>
+            <h3>⚙️ Condiciones para nuevas solicitudes</h3>
+            <label for="prestamoInteresAdmin">Interés (%)</label>
+            <input id="prestamoInteresAdmin" type="number" min="0" max="100" step="0.01" value="10">
+            <label for="prestamoPlazoAdmin">Plazo en días</label>
+            <input id="prestamoPlazoAdmin" type="number" min="1" max="365" step="1" value="30">
+            <button onclick="guardarCondicionesPrestamo()">💾 Guardar condiciones</button>
+            <h3>📋 Solicitudes y deudas</h3>
+            <div id="adminPrestamos" class="finance-list"></div>
+        </div>
 
         <!-- TINCOINS ADMIN -->
 
