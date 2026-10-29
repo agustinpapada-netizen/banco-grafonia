@@ -853,3 +853,206 @@ button:focus-visible {
         width: 100%;
     }
 }
+
+
+/* =====================================================
+   GRAFONIA — REFRESCO VISUAL FINTECH
+   Solo estilos: no modifica la lógica ni los datos.
+===================================================== */
+:root {
+    --verde: #65e0ad;
+    --verde-fondo: rgba(101, 224, 173, .10);
+    --verde-borde: rgba(101, 224, 173, .25);
+    --azul: #8caeff;
+    --azul-fondo: rgba(140, 174, 255, .09);
+    --azul-borde: rgba(140, 174, 255, .22);
+    --amarillo: #f0c879;
+    --amarillo-fondo: rgba(240, 200, 121, .09);
+    --amarillo-borde: rgba(240, 200, 121, .22);
+    --fondo: #0a1110;
+    --fondo-secundario: #101b19;
+    --superficie: rgba(18, 32, 29, .82);
+    --superficie-hover: rgba(26, 47, 41, .95);
+    --texto: #edf8f3;
+    --texto-secundario: #9bb4aa;
+    --borde: rgba(177, 224, 204, .12);
+    --radio: 18px;
+    --sombra: 0 18px 48px rgba(0, 0, 0, .24);
+}
+
+body {
+    background:
+        radial-gradient(ellipse at 8% 0%, rgba(39, 183, 126, .15), transparent 34rem),
+        radial-gradient(ellipse at 100% 25%, rgba(73, 123, 220, .09), transparent 30rem),
+        linear-gradient(145deg, #080e0d 0%, #0d1715 48%, #101b19 100%);
+    background-attachment: fixed;
+    letter-spacing: .1px;
+}
+
+.container {
+    max-width: 860px;
+    padding: 34px 0 56px;
+}
+
+h1 {
+    font-size: clamp(2.1rem, 5vw, 3.25rem);
+    letter-spacing: -1.8px;
+    font-weight: 800;
+    background: linear-gradient(100deg, #f1fff8 10%, #9aefc8 72%, #8caeff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+h2 {
+    letter-spacing: -.45px;
+}
+
+.card {
+    position: relative;
+    background: linear-gradient(145deg, rgba(21, 39, 34, .88), rgba(14, 25, 23, .88));
+    border: 1px solid rgba(177, 224, 204, .12);
+    border-radius: 20px;
+    padding: clamp(18px, 3vw, 28px);
+    box-shadow: 0 12px 34px rgba(0, 0, 0, .13);
+    backdrop-filter: blur(12px);
+}
+
+.card:hover {
+    border-color: rgba(101, 224, 173, .25);
+    background: linear-gradient(145deg, rgba(24, 44, 37, .94), rgba(15, 29, 25, .94));
+}
+
+.balance {
+    padding: clamp(25px, 5vw, 38px);
+    border-radius: 24px;
+    border-color: rgba(101, 224, 173, .3);
+    background:
+        radial-gradient(ellipse at 100% 0%, rgba(101, 224, 173, .17), transparent 55%),
+        linear-gradient(125deg, rgba(20, 55, 43, .96), rgba(16, 31, 29, .98) 62%, rgba(24, 37, 53, .95));
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .22), inset 0 1px rgba(255,255,255,.045);
+}
+
+.balance::after {
+    content: "₲";
+    position: absolute;
+    right: 20px;
+    bottom: -72px;
+    font-size: 210px;
+    line-height: 1;
+    font-weight: 900;
+    color: rgba(255,255,255,.025);
+    pointer-events: none;
+}
+
+.balance h2 {
+    position: relative;
+    z-index: 1;
+    font-size: clamp(2rem, 5vw, 2.7rem);
+    letter-spacing: -1px;
+    color: #8df0c2;
+}
+
+input, select, textarea {
+    border-radius: 13px;
+    border: 1px solid rgba(177, 224, 204, .15);
+    background: rgba(5, 13, 11, .62);
+    color: var(--texto);
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #65e0ad;
+    box-shadow: 0 0 0 4px rgba(101, 224, 173, .10);
+}
+
+button {
+    border-radius: 12px;
+    padding: 12px 19px;
+    background: linear-gradient(135deg, #82efbd, #4cc995);
+    color: #062318;
+    box-shadow: 0 5px 16px rgba(48, 186, 126, .09);
+    font-weight: 750;
+}
+
+button:hover {
+    filter: brightness(1.07);
+    box-shadow: 0 8px 22px rgba(48, 186, 126, .16);
+}
+
+.secondary-button, .logout-button {
+    background: rgba(132, 158, 151, .12);
+    border-color: rgba(177, 224, 204, .14);
+    color: #e0f0e9;
+    box-shadow: none;
+}
+
+.secondary-button:hover, .logout-button:hover {
+    background: rgba(132, 158, 151, .2);
+}
+
+.danger-button {
+    background: linear-gradient(135deg, #e78b8b, #c95e68);
+    color: #2a090d;
+}
+
+#ranking, #adminRanking {
+    background: rgba(140, 174, 255, .055);
+    border-color: rgba(140, 174, 255, .19);
+}
+
+.stat {
+    border-radius: 17px;
+    background: linear-gradient(145deg, rgba(140, 174, 255, .10), rgba(140, 174, 255, .035));
+    border-color: rgba(140, 174, 255, .16);
+}
+
+.stat strong {
+    letter-spacing: -.7px;
+}
+
+.profile-grid div, .admin-user, .solicitud, .notification, .finance-row, .movimiento, .job-row {
+    border-radius: 14px;
+    border-color: rgba(177, 224, 204, .10);
+    background: rgba(255, 255, 255, .025);
+}
+
+.historial {
+    border-radius: 16px;
+    background: rgba(4, 10, 9, .32);
+}
+
+.tincoin-card, .admin-tincoin-card {
+    border-color: rgba(240, 200, 121, .22);
+    background: linear-gradient(145deg, rgba(65, 53, 29, .22), rgba(16, 26, 24, .86) 65%);
+}
+
+.tincoin-price-box {
+    background: rgba(5, 12, 10, .4);
+    border-radius: 17px;
+}
+
+.finance-card {
+    border-top: 1px solid rgba(101, 224, 173, .16);
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid #8df0c2;
+    outline-offset: 3px;
+}
+
+@media (max-width: 560px) {
+    .container {
+        width: 92%;
+        padding-top: 24px;
+    }
+    .card {
+        border-radius: 17px;
+    }
+    .balance::after {
+        font-size: 150px;
+        bottom: -48px;
+    }
+    button {
+        max-width: 100%;
+    }
+}
