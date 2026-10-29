@@ -2,6 +2,8 @@ let usuarios = {};
 let adminToken =
     localStorage.getItem("adminToken");
 
+let userToken = localStorage.getItem("userToken");
+
 let intervaloCliente = null;
 let intervaloTinCoin = null;
 
@@ -204,6 +206,9 @@ async function entrar() {
         usuarios =
             datos.usuarios;
 
+        userToken = datos.tokenUsuario;
+        localStorage.setItem("userToken", userToken);
+
         localStorage.setItem(
             "usuarioActual",
             nombre
@@ -295,6 +300,7 @@ async function actualizarCliente() {
     actualizarSolicitudes();
     actualizarEconomia();
     actualizarTinCoin();
+    actualizarFinanzasPersonales();
 }
 
 
@@ -2331,6 +2337,7 @@ function mostrarAdmin() {
     actualizarAuditoria();
     actualizarEmpleosAdmin();
     actualizarTinCoinAdmin();
+    actualizarPanelFiscal();
 }
 
 
@@ -4196,3 +4203,177 @@ cargarUsuarios()
             }
         }
     );
+
+  
+// =========================
+// IMPUESTOS Y PRÉSTAMOS
+// =========================
+async function actualizarFinanzasPersonales() {
+    const contenedor = document.getElementById("misFinanzas");
+    if (!contenedor || !userToken || localStorage.getItem("usuarioActual") === "AdminGrafonia") return;
+    try {
+        const respuesta = await fetch("/api/finanzas/mias", { headers: { "x-user-token": userToken } });
+        const datos = await respuesta.json();
+        if (!respuesta.ok) {
+            contenedor.innerHTML = "<p>" + escaparHTML(datos.error || "Iniciá sesión nuevamente para usar préstamos.") + "</p>";
+            return;
+        }
+        const impuestos = datos.impuestos || [];
+        const prestamos = datos.prestamos || [];
+        let contenido = "<h3>🏛️ Mis impuestos</h3>";
+        contenido += impuestos.length ? impuestos.map(i =>
+            "<div class='finance-row'><strong>₲" + Number(i.cantidad).toLocaleString("es-AR") + "</strong><span>" + escaparHTML(i.tasa) + "% · " + escaparHTML(i.fecha) + "</span></div>"
+        ).join("") : "<p>Todavía no tenés impuestos registrados.</p>";
+        contenido += "<h3>🏦 Mis préstamos</h3><p>Interés actual: " + escaparHTML(datos.condiciones.interes) + "% · Plazo: " + escaparHTML(datos.condiciones.plazo_dias) + " días.</p>";
+        contenido += prestamos.length ? prestamos.map(p => {
+            const pendiente = Number(p.pendiente);
+            let pago = "";
+            if (p.estado === "APROBADO" && pendiente > 0) {
+                pago = "<div class='loan-pay'><input type='number' min='1' max='" + pendiente + "' step='1' id='pagoPrestamo" + Number(p.id) + "' placeholder='Importe a pagar'><button onclick='pagarPrestamo(" + Number(p.id) + ")'>💸 Pagar deuda</button></div>";
+            }
+            return "<div class='finance-row loan-row'><strong>Préstamo #" + Number(p.id) + " · ₲" + Number(p.importe).toLocaleString("es-AR") + "</strong><span>Estado: " + escaparHTML(p.estado) + "</span><span>Deuda: ₲" + pendiente.toLocaleString("es-AR") + " · Vence: " + escaparHTML(p.vencimiento || "Sin aprobar") + "</span><small>" + escaparHTML(p.motivo || "Sin motivo") + "</small>" + pago + "</div>";
+        }).join("") : "<p>No solicitaste préstamos todavía.</p>";
+        contenedor.innerHTML = contenido;
+    } catch (error) {
+        console.error(error);
+        contenedor.innerHTML = "<p>No se pudieron cargar tus finanzas.</p>";
+    }
+}
+
+async function solicitarPrestamo() {
+    const importe = Number(document.getElementById("prestamoImporte").value);
+    const motivo = document.getElementById("prestamoMotivo").value.trim();
+    if (!userToken) return alert("Volvé a iniciar sesión para solicitar un préstamo.");
+    if (!Number.isSafeInteger(importe) || importe < 1) return alert("Ingresá un importe entero válido.");
+    try {
+        const respuesta = await fetch("/api/prestamos", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-user-token": userToken },
+            body: JSON.stringify({ importe, motivo })
+        });
+        const datos = await respuesta.json();
+        if (!respuesta.ok) return alert(datos.error || "No se pudo solicitar el préstamo.");
+        document.getElementById("prestamoImporte").value = "";
+        document.getElementById("prestamoMotivo").value = "";
+        alert(datos.mensaje);
+        actualizarFinanzasPersonales();
+        actualizarNotificaciones();
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo conectar con el banco.");
+    }
+}
+
+async function pagarPrestamo(id) {
+    const cantidad = Number(document.getElementById("pagoPrestamo" + id).value);
+    if (!Number.isSafeInteger(cantidad) || cantidad < 1) return alert("Ingresá un importe entero válido.");
+    try {
+        const respuesta = await fetch("/api/prestamos/" + id + "/pagar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-user-token": userToken },
+            body: JSON.stringify({ cantidad })
+        });
+        const datos = await respuesta.json();
+        if (!respuesta.ok) return alert(datos.error || "No se pudo pagar el préstamo.");
+        alert(datos.mensaje + (datos.pendiente > 0 ? " Quedan ₲" + datos.pendiente + "." : " ¡Deuda cancelada!"));
+        await actualizarCliente();
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo conectar con el banco.");
+    }
+}
+
+// =========================
+// ADMIN — AUTORIDAD FISCAL
+// =========================
+async function actualizarPanelFiscal() {
+    if (!adminToken) return;
+    try {
+        const respuesta = await fetch("/api/admin/fiscal", { headers: { "x-admin-token": adminToken } });
+        const datos = await respuesta.json();
+        if (!respuesta.ok) return;
+        document.getElementById("fiscalTasaActual").textContent = Number(datos.config.tasa).toFixed(2) + "%";
+        document.getElementById("fiscalRecaudado").textContent = "₲" + Number(datos.config.recaudado_total).toLocaleString("es-AR");
+        document.getElementById("fiscalContribuyentes").textContent = Number(datos.totales.contribuyentes).toLocaleString("es-AR");
+        document.getElementById("prestamosPendientes").textContent = datos.prestamos.pendientes;
+        document.getElementById("prestamosActivos").textContent = datos.prestamos.activos;
+        document.getElementById("prestamosDeuda").textContent = "₲" + Number(datos.prestamos.deuda_activa).toLocaleString("es-AR");
+        document.getElementById("fiscalHistorial").innerHTML = (datos.recientes || []).map(i =>
+            "<div class='finance-row'><strong>" + escaparHTML(i.usuario) + " · ₲" + Number(i.cantidad).toLocaleString("es-AR") + "</strong><span>" + escaparHTML(i.tasa) + "% · " + escaparHTML(i.fecha) + "</span></div>"
+        ).join("") || "<p>Todavía no se recaudaron impuestos.</p>";
+        await actualizarPrestamosAdmin();
+    } catch (error) { console.error(error); }
+}
+
+async function guardarTasaFiscal() {
+    const tasa = Number(document.getElementById("fiscalTasaInput").value);
+    if (!Number.isFinite(tasa) || tasa < 0 || tasa > 50) return alert("La tasa debe estar entre 0 y 50 %.");
+    const respuesta = await fetch("/api/admin/fiscal/tasa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-token": adminToken },
+        body: JSON.stringify({ tasa })
+    });
+    const datos = await respuesta.json();
+    if (!respuesta.ok) return alert(datos.error || "No se pudo guardar la tasa.");
+    alert(datos.mensaje);
+    actualizarPanelFiscal();
+    actualizarAuditoria();
+}
+
+async function cobrarImpuestos() {
+    if (!confirm("¿Aplicar ahora el impuesto a todas las cuentas con saldo positivo? Esta operación modifica saldos y no se puede deshacer desde la interfaz.")) return;
+    const respuesta = await fetch("/api/admin/fiscal/cobrar", { method: "POST", headers: { "x-admin-token": adminToken } });
+    const datos = await respuesta.json();
+    if (!respuesta.ok) return alert(datos.error || "No se pudo ejecutar el cobro.");
+    alert("Cobro completado: ₲" + Number(datos.recaudado).toLocaleString("es-AR") + " recaudados de " + datos.contribuyentes + " cuentas.");
+    actualizarPanelFiscal();
+    actualizarAuditoria();
+    actualizarEstadisticasAdmin();
+}
+
+async function actualizarPrestamosAdmin() {
+    const contenedor = document.getElementById("adminPrestamos");
+    if (!contenedor || !adminToken) return;
+    try {
+        const respuesta = await fetch("/api/admin/prestamos", { headers: { "x-admin-token": adminToken } });
+        const prestamos = await respuesta.json();
+        if (!respuesta.ok) return;
+        contenedor.innerHTML = prestamos.map(p => {
+            const acciones = p.estado === "PENDIENTE"
+                ? "<div class='loan-actions'><button onclick='resolverPrestamo(" + Number(p.id) + ", \"aprobar\")'>✅ Aprobar</button><button class='danger-button' onclick='resolverPrestamo(" + Number(p.id) + ", \"rechazar\")'>❌ Rechazar</button></div>"
+                : "";
+            return "<div class='finance-row loan-row'><strong>#" + Number(p.id) + " · " + escaparHTML(p.usuario) + " · ₲" + Number(p.importe).toLocaleString("es-AR") + "</strong><span>Estado: " + escaparHTML(p.estado) + " · Interés: " + escaparHTML(p.interes) + "%</span><span>Deuda: ₲" + Number(p.pendiente).toLocaleString("es-AR") + " · Vence: " + escaparHTML(p.vencimiento || "—") + "</span><small>" + escaparHTML(p.motivo || "Sin motivo") + " · Solicitado: " + escaparHTML(p.solicitado) + "</small>" + acciones + "</div>";
+        }).join("") || "<p>No hay solicitudes de préstamos.</p>";
+    } catch (error) { console.error(error); }
+}
+
+async function guardarCondicionesPrestamo() {
+    const interes = Number(document.getElementById("prestamoInteresAdmin").value);
+    const plazoDias = Number(document.getElementById("prestamoPlazoAdmin").value);
+    const respuesta = await fetch("/api/admin/prestamos/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-token": adminToken },
+        body: JSON.stringify({ interes, plazoDias })
+    });
+    const datos = await respuesta.json();
+    if (!respuesta.ok) return alert(datos.error || "No se pudieron guardar las condiciones.");
+    alert(datos.mensaje);
+    actualizarPanelFiscal();
+    actualizarAuditoria();
+}
+
+async function resolverPrestamo(id, decision) {
+    const texto = decision === "aprobar" ? "aprobar y acreditar el dinero" : "rechazar";
+    if (!confirm("¿Confirmás " + texto + " el préstamo #" + id + "?")) return;
+    const respuesta = await fetch("/api/admin/prestamos/" + id + "/resolver", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-token": adminToken },
+        body: JSON.stringify({ decision })
+    });
+    const datos = await respuesta.json();
+    if (!respuesta.ok) return alert(datos.error || "No se pudo resolver el préstamo.");
+    alert(datos.mensaje);
+    actualizarPanelFiscal();
+    actualizarAuditoria();
+    actualizarEstadisticasAdmin();
+}
