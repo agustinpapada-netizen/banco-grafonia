@@ -799,3 +799,57 @@ button:focus-visible {
         animation-duration: 0.01ms !important;
     }
 }
+
+
+/* =========================
+   IMPUESTOS Y PRÉSTAMOS
+========================= */
+.finance-card {
+    margin-top: 24px;
+}
+.finance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+}
+.finance-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 12px;
+    background: rgba(255,255,255,.035);
+    overflow-wrap: anywhere;
+}
+.finance-row small {
+    opacity: .78;
+}
+.loan-form, .loan-pay, .loan-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin: 12px 0;
+}
+.loan-form input, .loan-pay input {
+    flex: 1 1 180px;
+    min-width: 0;
+}
+.loan-actions button {
+    flex: 1 1 130px;
+}
+.finance-card label {
+    display: block;
+    margin: 12px 0 6px;
+}
+@media (max-width: 560px) {
+    .loan-form, .loan-pay, .loan-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .loan-form button, .loan-pay button, .loan-actions button {
+        width: 100%;
+    }
+}
