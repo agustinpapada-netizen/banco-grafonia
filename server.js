@@ -18,6 +18,9 @@ const pool = new Pool({
 // =========================
 
 const sesionesAdmin = new Map();
+const intentosAdmin = new Map();
+const DURACION_SESION_ADMIN = 8 * 60 * 60 * 1000;
+const DURACION_SESION_USUARIO_DIAS = 7;
 
 // =========================
 // CONFIGURACIÓN TINCOIN
@@ -266,6 +269,69 @@ async function prepararBaseDeDatos() {
             Number(precioInicial.rows[0].precio)
         ]);
     }
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS sesiones_usuario (
+            token_hash TEXT PRIMARY KEY,
+            usuario TEXT NOT NULL REFERENCES usuarios(nombre) ON DELETE CASCADE,
+            expira TIMESTAMP NOT NULL,
+            creada TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS impuestos_config (
+            id INTEGER PRIMARY KEY,
+            tasa NUMERIC(5,2) NOT NULL DEFAULT 5,
+            recaudado_total BIGINT NOT NULL DEFAULT 0,
+            actualizado TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+    await pool.query(`
+        INSERT INTO impuestos_config (id, tasa)
+        VALUES (1, 5)
+        ON CONFLICT (id) DO NOTHING
+    `);
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS impuestos_historial (
+            id SERIAL PRIMARY KEY,
+            usuario TEXT NOT NULL,
+            saldo_anterior BIGINT NOT NULL,
+            tasa NUMERIC(5,2) NOT NULL,
+            cantidad BIGINT NOT NULL,
+            fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS prestamos_config (
+            id INTEGER PRIMARY KEY,
+            interes NUMERIC(5,2) NOT NULL DEFAULT 10,
+            plazo_dias INTEGER NOT NULL DEFAULT 30,
+            actualizado TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+    await pool.query(`
+        INSERT INTO prestamos_config (id, interes, plazo_dias)
+        VALUES (1, 10, 30)
+        ON CONFLICT (id) DO NOTHING
+    `);
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS prestamos (
+            id SERIAL PRIMARY KEY,
+            usuario TEXT NOT NULL,
+            importe BIGINT NOT NULL CHECK (importe > 0),
+            interes NUMERIC(5,2) NOT NULL,
+            total_deuda BIGINT NOT NULL,
+            pagado BIGINT NOT NULL DEFAULT 0,
+            motivo TEXT NOT NULL DEFAULT '',
+            estado TEXT NOT NULL DEFAULT 'PENDIENTE',
+            solicitado TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            aprobado TIMESTAMP,
+            vencimiento TIMESTAMP,
+            resuelto_por TEXT
+        )
+    `);
 
     console.log("Base de datos preparada 🗄️");
 }
@@ -517,17 +583,14 @@ function verificarAdmin(
     const token =
         req.headers["x-admin-token"];
 
-    if (
-        !token ||
-        !sesionesAdmin.has(token)
-    ) {
-
+    const sesion = token ? sesionesAdmin.get(token) : null;
+    if (!sesion || Date.now() > sesion.expira) {
+        if (token) sesionesAdmin.delete(token);
         return res.status(403).json({
-            error:
-                "Acceso de administrador requerido"
+            error: "La sesión administrativa venció o no es válida. Volvé a iniciar sesión."
         });
     }
-
+    sesion.ultimoUso = Date.now();
     next();
 }
 
@@ -555,28 +618,31 @@ app.post(
             });
         }
 
-        if (
-            password !==
-            passwordCorrecta
-        ) {
-
-            return res.status(401).json({
-                error:
-                    "Contraseña incorrecta"
-            });
+        const ip = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "desconocida").split(",")[0].trim();
+        const intento = intentosAdmin.get(ip) || { fallos: 0, bloqueadoHasta: 0 };
+        if (Date.now() < intento.bloqueadoHasta) {
+            return res.status(429).json({ error: "Demasiados intentos. Esperá unos minutos antes de volver a intentar." });
         }
+        if (password !== passwordCorrecta) {
+            intento.fallos += 1;
+            if (intento.fallos >= 5) {
+                intento.bloqueadoHasta = Date.now() + 10 * 60 * 1000;
+                intento.fallos = 0;
+            }
+            intentosAdmin.set(ip, intento);
+            return res.status(401).json({ error: "Contraseña incorrecta" });
+        }
+        intentosAdmin.delete(ip);
 
         const token =
             crypto.randomBytes(32)
                 .toString("hex");
 
-        sesionesAdmin.set(
-            token,
-            {
-                creado:
-                    Date.now()
-            }
-        );
+        sesionesAdmin.set(token, {
+            creado: Date.now(),
+            ultimoUso: Date.now(),
+            expira: Date.now() + DURACION_SESION_ADMIN
+        });
 
         res.json({
             mensaje:
@@ -741,11 +807,19 @@ app.post(
 
             await pagarSueldoSiCorresponde(nombreLimpio);
 
+            const tokenUsuario = crypto.randomBytes(32).toString("hex");
+            const tokenHash = crypto.createHash("sha256").update(tokenUsuario).digest("hex");
+            await pool.query(
+                "INSERT INTO sesiones_usuario (token_hash, usuario, expira) VALUES ($1, $2, CURRENT_TIMESTAMP + INTERVAL '7 days')",
+                [tokenHash, nombreLimpio]
+            );
+
             const usuarios = await obtenerUsuarios();
 
             res.json({
                 mensaje: "Inicio de sesión correcto",
-                usuarios
+                usuarios,
+                tokenUsuario
             });
 
         } catch (error) {
@@ -4664,6 +4738,299 @@ app.get(
     }
 );
 
+
+
+  
+// =========================
+// FINANZAS: AUTENTICACIÓN DE USUARIO
+// =========================
+async function verificarUsuario(req, res, next) {
+    const token = req.headers["x-user-token"];
+    if (!token || typeof token !== "string") {
+        return res.status(401).json({ error: "Iniciá sesión nuevamente para continuar." });
+    }
+    try {
+        const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+        const resultado = await pool.query(
+            "SELECT usuario FROM sesiones_usuario WHERE token_hash = $1 AND expira > CURRENT_TIMESTAMP",
+            [tokenHash]
+        );
+        if (!resultado.rows.length) {
+            return res.status(401).json({ error: "La sesión venció. Volvé a iniciar sesión." });
+        }
+        req.usuarioAutenticado = resultado.rows[0].usuario;
+        next();
+    } catch (error) {
+        console.error("Error validando sesión de usuario:", error);
+        res.status(500).json({ error: "No se pudo validar la sesión." });
+    }
+}
+
+app.post("/api/usuario/logout", verificarUsuario, async (req, res) => {
+    const token = req.headers["x-user-token"];
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    await pool.query("DELETE FROM sesiones_usuario WHERE token_hash = $1", [tokenHash]);
+    res.json({ mensaje: "Sesión cerrada" });
+});
+
+// =========================
+// IMPUESTOS Y PRÉSTAMOS: USUARIO
+// =========================
+app.get("/api/finanzas/mias", verificarUsuario, async (req, res) => {
+    try {
+        const [impuestos, prestamos, config] = await Promise.all([
+            pool.query(
+                "SELECT id, saldo_anterior, tasa, cantidad, TO_CHAR(fecha, 'DD/MM/YYYY HH24:MI') AS fecha FROM impuestos_historial WHERE usuario = $1 ORDER BY id DESC LIMIT 100",
+                [req.usuarioAutenticado]
+            ),
+            pool.query(
+                "SELECT id, importe, interes, total_deuda, pagado, GREATEST(total_deuda - pagado, 0) AS pendiente, motivo, estado, TO_CHAR(solicitado, 'DD/MM/YYYY HH24:MI') AS solicitado, TO_CHAR(vencimiento, 'DD/MM/YYYY') AS vencimiento FROM prestamos WHERE usuario = $1 ORDER BY id DESC LIMIT 100",
+                [req.usuarioAutenticado]
+            ),
+            pool.query("SELECT interes, plazo_dias FROM prestamos_config WHERE id = 1")
+        ]);
+        res.json({
+            impuestos: impuestos.rows,
+            prestamos: prestamos.rows,
+            condiciones: config.rows[0] || { interes: 10, plazo_dias: 30 }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "No se pudieron cargar tus datos fiscales y préstamos." });
+    }
+});
+
+app.post("/api/prestamos", verificarUsuario, async (req, res) => {
+    const importe = Number(req.body.importe);
+    const motivo = String(req.body.motivo || "").trim().slice(0, 240);
+    if (!Number.isSafeInteger(importe) || importe < 1 || importe > 100000000) {
+        return res.status(400).json({ error: "El préstamo debe ser un importe entero entre ₲1 y ₲100.000.000." });
+    }
+    const client = await pool.connect();
+    try {
+        await client.query("BEGIN");
+        const pendientes = await client.query(
+            "SELECT COUNT(*)::int AS total FROM prestamos WHERE usuario = $1 AND estado IN ('PENDIENTE', 'APROBADO') AND total_deuda > pagado",
+            [req.usuarioAutenticado]
+        );
+        if (pendientes.rows[0].total >= 3) {
+            await client.query("ROLLBACK");
+            return res.status(400).json({ error: "Ya tenés tres préstamos pendientes o activos. Cancelá una deuda antes de solicitar otro." });
+        }
+        const cfg = await client.query("SELECT interes FROM prestamos_config WHERE id = 1");
+        const interes = Number(cfg.rows[0]?.interes ?? 10);
+        const totalDeuda = Math.ceil(importe * (1 + interes / 100));
+        const creado = await client.query(
+            "INSERT INTO prestamos (usuario, importe, interes, total_deuda, motivo) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+            [req.usuarioAutenticado, importe, interes, totalDeuda, motivo]
+        );
+        await client.query(
+            "INSERT INTO auditoria (tipo, actor, usuario, cantidad, detalle) VALUES ('PRESTAMO_SOLICITADO', $1, $1, $2, $3)",
+            [req.usuarioAutenticado, importe, "Solicitud de préstamo #" + creado.rows[0].id]
+        );
+        await client.query("COMMIT");
+        res.status(201).json({ mensaje: "Solicitud enviada al administrador.", id: creado.rows[0].id });
+    } catch (error) {
+        await client.query("ROLLBACK");
+        console.error(error);
+        res.status(500).json({ error: "No se pudo crear la solicitud de préstamo." });
+    } finally {
+        client.release();
+    }
+});
+
+app.post("/api/prestamos/:id/pagar", verificarUsuario, async (req, res) => {
+    const id = Number(req.params.id);
+    const cantidad = Number(req.body.cantidad);
+    if (!Number.isSafeInteger(id) || id < 1 || !Number.isSafeInteger(cantidad) || cantidad < 1) {
+        return res.status(400).json({ error: "Importe o préstamo inválido." });
+    }
+    const client = await pool.connect();
+    try {
+        await client.query("BEGIN");
+        const loan = await client.query(
+            "SELECT * FROM prestamos WHERE id = $1 AND usuario = $2 FOR UPDATE",
+            [id, req.usuarioAutenticado]
+        );
+        if (!loan.rows.length || loan.rows[0].estado !== "APROBADO") {
+            await client.query("ROLLBACK");
+            return res.status(404).json({ error: "No se encontró un préstamo activo para tu cuenta." });
+        }
+        const prestamo = loan.rows[0];
+        const pendiente = Number(prestamo.total_deuda) - Number(prestamo.pagado);
+        if (pendiente <= 0) {
+            await client.query("ROLLBACK");
+            return res.status(400).json({ error: "Este préstamo ya está pagado." });
+        }
+        if (cantidad > pendiente) {
+            await client.query("ROLLBACK");
+            return res.status(400).json({ error: "El pago supera la deuda pendiente de ₲" + pendiente + "." });
+        }
+        const cuenta = await client.query("SELECT dinero FROM usuarios WHERE nombre = $1 FOR UPDATE", [req.usuarioAutenticado]);
+        if (!cuenta.rows.length || Number(cuenta.rows[0].dinero) < cantidad) {
+            await client.query("ROLLBACK");
+            return res.status(400).json({ error: "No tenés saldo suficiente para ese pago." });
+        }
+        await client.query("UPDATE usuarios SET dinero = dinero - $1 WHERE nombre = $2", [cantidad, req.usuarioAutenticado]);
+        const pagadoNuevo = Number(prestamo.pagado) + cantidad;
+        const estadoNuevo = pagadoNuevo >= Number(prestamo.total_deuda) ? "PAGADO" : "APROBADO";
+        await client.query("UPDATE prestamos SET pagado = $1, estado = $2 WHERE id = $3", [pagadoNuevo, estadoNuevo, id]);
+        await client.query(
+            "INSERT INTO auditoria (tipo, actor, usuario, cantidad, detalle) VALUES ('PAGO_PRESTAMO', $1, $1, $2, $3)",
+            [req.usuarioAutenticado, cantidad, "Pago del préstamo #" + id + "; deuda restante ₲" + (Number(prestamo.total_deuda) - pagadoNuevo)]
+        );
+        await client.query("COMMIT");
+        res.json({ mensaje: "Pago registrado.", pendiente: Number(prestamo.total_deuda) - pagadoNuevo, estado: estadoNuevo });
+    } catch (error) {
+        await client.query("ROLLBACK");
+        console.error(error);
+        res.status(500).json({ error: "No se pudo registrar el pago." });
+    } finally {
+        client.release();
+    }
+});
+
+// =========================
+// AUTORIDAD FISCAL: ADMIN
+// =========================
+app.get("/api/admin/fiscal", verificarAdmin, async (req, res) => {
+    try {
+        const [cfg, totales, recientes, loans] = await Promise.all([
+            pool.query("SELECT tasa, recaudado_total, TO_CHAR(actualizado, 'DD/MM/YYYY HH24:MI') AS actualizado FROM impuestos_config WHERE id = 1"),
+            pool.query("SELECT COUNT(*)::int AS contribuyentes, COALESCE(SUM(cantidad), 0)::bigint AS recaudado FROM impuestos_historial"),
+            pool.query("SELECT usuario, cantidad, tasa, TO_CHAR(fecha, 'DD/MM/YYYY HH24:MI') AS fecha FROM impuestos_historial ORDER BY id DESC LIMIT 25"),
+            pool.query("SELECT COUNT(*) FILTER (WHERE estado = 'PENDIENTE')::int AS pendientes, COUNT(*) FILTER (WHERE estado = 'APROBADO')::int AS activos, COALESCE(SUM(GREATEST(total_deuda - pagado, 0)) FILTER (WHERE estado = 'APROBADO'), 0)::bigint AS deuda_activa FROM prestamos")
+        ]);
+        res.json({ config: cfg.rows[0], totales: totales.rows[0], recientes: recientes.rows, prestamos: loans.rows[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "No se pudo cargar el panel fiscal." });
+    }
+});
+
+app.post("/api/admin/fiscal/tasa", verificarAdmin, async (req, res) => {
+    const tasa = Number(req.body.tasa);
+    if (!Number.isFinite(tasa) || tasa < 0 || tasa > 50) {
+        return res.status(400).json({ error: "La tasa debe estar entre 0 % y 50 %." });
+    }
+    try {
+        await pool.query("UPDATE impuestos_config SET tasa = $1, actualizado = CURRENT_TIMESTAMP WHERE id = 1", [tasa]);
+        await pool.query(
+            "INSERT INTO auditoria (tipo, actor, cantidad, detalle) VALUES ('TASA_FISCAL_MODIFICADA', 'AdminGrafonia', $1, $2)",
+            [Math.round(tasa * 100), "Nueva tasa impositiva: " + tasa + "%"]
+        );
+        res.json({ mensaje: "Tasa fiscal actualizada.", tasa });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "No se pudo actualizar la tasa fiscal." });
+    }
+});
+
+app.post("/api/admin/fiscal/cobrar", verificarAdmin, async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await client.query("BEGIN");
+        const cfg = await client.query("SELECT tasa FROM impuestos_config WHERE id = 1 FOR UPDATE");
+        const tasa = Number(cfg.rows[0]?.tasa ?? 0);
+        const cuentas = await client.query("SELECT nombre, dinero FROM usuarios WHERE dinero > 0 ORDER BY nombre FOR UPDATE");
+        let recaudado = 0;
+        let contribuyentes = 0;
+        for (const cuenta of cuentas.rows) {
+            const saldo = Number(cuenta.dinero);
+            const impuesto = Math.floor(saldo * tasa / 100);
+            if (impuesto <= 0) continue;
+            await client.query("UPDATE usuarios SET dinero = dinero - $1 WHERE nombre = $2", [impuesto, cuenta.nombre]);
+            await client.query("INSERT INTO impuestos_historial (usuario, saldo_anterior, tasa, cantidad) VALUES ($1, $2, $3, $4)", [cuenta.nombre, saldo, tasa, impuesto]);
+            await client.query("INSERT INTO notificaciones (usuario, titulo, mensaje) VALUES ($1, $2, $3)", [cuenta.nombre, "🏛️ Impuesto de Grafonia", "Se cobró ₲" + impuesto + " con la tasa fiscal del " + tasa + "%. Saldo previo: ₲" + saldo + "."]);
+            recaudado += impuesto;
+            contribuyentes++;
+        }
+        await client.query("UPDATE impuestos_config SET recaudado_total = recaudado_total + $1, actualizado = CURRENT_TIMESTAMP WHERE id = 1", [recaudado]);
+        await client.query("INSERT INTO auditoria (tipo, actor, cantidad, detalle) VALUES ('COBRO_FISCAL', 'AdminGrafonia', $1, $2)", [recaudado, "Cobro fiscal global al " + tasa + "%; cuentas afectadas: " + contribuyentes]);
+        await client.query("COMMIT");
+        res.json({ mensaje: "Cobro fiscal completado.", tasa, recaudado, contribuyentes });
+    } catch (error) {
+        await client.query("ROLLBACK");
+        console.error(error);
+        res.status(500).json({ error: "No se pudo completar el cobro fiscal." });
+    } finally {
+        client.release();
+    }
+});
+
+// =========================
+// PRÉSTAMOS: ADMIN
+// =========================
+app.get("/api/admin/prestamos", verificarAdmin, async (req, res) => {
+    try {
+        const resultado = await pool.query(
+            "SELECT id, usuario, importe, interes, total_deuda, pagado, GREATEST(total_deuda - pagado, 0) AS pendiente, motivo, estado, TO_CHAR(solicitado, 'DD/MM/YYYY HH24:MI') AS solicitado, TO_CHAR(vencimiento, 'DD/MM/YYYY') AS vencimiento FROM prestamos ORDER BY CASE estado WHEN 'PENDIENTE' THEN 0 WHEN 'APROBADO' THEN 1 ELSE 2 END, id DESC LIMIT 200"
+        );
+        res.json(resultado.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "No se pudieron cargar los préstamos." });
+    }
+});
+
+app.post("/api/admin/prestamos/config", verificarAdmin, async (req, res) => {
+    const interes = Number(req.body.interes);
+    const plazoDias = Number(req.body.plazoDias);
+    if (!Number.isFinite(interes) || interes < 0 || interes > 100 || !Number.isInteger(plazoDias) || plazoDias < 1 || plazoDias > 365) {
+        return res.status(400).json({ error: "Interés: 0–100 %. Plazo: 1–365 días." });
+    }
+    try {
+        await pool.query("UPDATE prestamos_config SET interes = $1, plazo_dias = $2, actualizado = CURRENT_TIMESTAMP WHERE id = 1", [interes, plazoDias]);
+        await pool.query("INSERT INTO auditoria (tipo, actor, cantidad, detalle) VALUES ('CONFIG_PRESTAMOS', 'AdminGrafonia', $1, $2)", [Math.round(interes * 100), "Interés: " + interes + "%; plazo: " + plazoDias + " días"]);
+        res.json({ mensaje: "Condiciones de préstamos actualizadas." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "No se pudieron guardar las condiciones." });
+    }
+});
+
+app.post("/api/admin/prestamos/:id/resolver", verificarAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    const decision = String(req.body.decision || "");
+    if (!Number.isSafeInteger(id) || id < 1 || !["aprobar", "rechazar"].includes(decision)) {
+        return res.status(400).json({ error: "Decisión o préstamo inválido." });
+    }
+    const client = await pool.connect();
+    try {
+        await client.query("BEGIN");
+        const resultado = await client.query("SELECT * FROM prestamos WHERE id = $1 FOR UPDATE", [id]);
+        if (!resultado.rows.length || resultado.rows[0].estado !== "PENDIENTE") {
+            await client.query("ROLLBACK");
+            return res.status(409).json({ error: "El préstamo no existe o ya fue resuelto." });
+        }
+        const loan = resultado.rows[0];
+        if (decision === "rechazar") {
+            await client.query("UPDATE prestamos SET estado = 'RECHAZADO', resuelto_por = 'AdminGrafonia' WHERE id = $1", [id]);
+            await client.query("INSERT INTO auditoria (tipo, actor, usuario, cantidad, detalle) VALUES ('PRESTAMO_RECHAZADO', 'AdminGrafonia', $1, $2, $3)", [loan.usuario, loan.importe, "Solicitud #" + id + " rechazada"]);
+            await client.query("INSERT INTO notificaciones (usuario, titulo, mensaje) VALUES ($1, $2, $3)", [loan.usuario, "🏦 Préstamo rechazado", "Tu solicitud de préstamo #" + id + " fue rechazada."]);
+        } else {
+            const cfg = await client.query("SELECT plazo_dias FROM prestamos_config WHERE id = 1");
+            const plazoDias = Number(cfg.rows[0]?.plazo_dias ?? 30);
+            const cuenta = await client.query("SELECT nombre FROM usuarios WHERE nombre = $1 FOR UPDATE", [loan.usuario]);
+            if (!cuenta.rows.length) {
+                await client.query("ROLLBACK");
+                return res.status(404).json({ error: "El usuario de la solicitud ya no existe." });
+            }
+            await client.query("UPDATE usuarios SET dinero = dinero + $1 WHERE nombre = $2", [loan.importe, loan.usuario]);
+            await client.query("UPDATE prestamos SET estado = 'APROBADO', aprobado = CURRENT_TIMESTAMP, vencimiento = CURRENT_TIMESTAMP + ($1 * INTERVAL '1 day'), resuelto_por = 'AdminGrafonia' WHERE id = $2", [plazoDias, id]);
+            await client.query("INSERT INTO auditoria (tipo, actor, usuario, cantidad, detalle) VALUES ('PRESTAMO_APROBADO', 'AdminGrafonia', $1, $2, $3)", [loan.usuario, loan.importe, "Préstamo #" + id + "; deuda total ₲" + loan.total_deuda + "; vencimiento en " + plazoDias + " días"]);
+            await client.query("INSERT INTO notificaciones (usuario, titulo, mensaje) VALUES ($1, $2, $3)", [loan.usuario, "🏦 Préstamo aprobado", "Se acreditaron ₲" + loan.importe + ". Deberás devolver ₲" + loan.total_deuda + " antes del vencimiento."]);
+        }
+        await client.query("COMMIT");
+        res.json({ mensaje: decision === "aprobar" ? "Préstamo aprobado y acreditado." : "Solicitud rechazada." });
+    } catch (error) {
+        await client.query("ROLLBACK");
+        console.error(error);
+        res.status(500).json({ error: "No se pudo resolver el préstamo." });
+    } finally {
+        client.release();
+    }
+});
 
 // =========================
 // ARRANQUE
