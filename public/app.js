@@ -4031,6 +4031,20 @@ async function cerrarSesion() {
         );
     }
 
+    if (userToken) {
+        try {
+            await fetch("/api/usuario/logout", {
+                method: "POST",
+                headers: { "x-user-token": userToken }
+            });
+        } catch (error) {
+            console.error("No se pudo revocar la sesión de usuario:", error);
+        }
+    }
+
+    userToken = null;
+    localStorage.removeItem("userToken");
+
     localStorage.removeItem(
         "usuarioActual"
     );
